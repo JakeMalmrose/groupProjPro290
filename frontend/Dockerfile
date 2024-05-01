@@ -19,7 +19,7 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 COPY . .
 
 # Expose the port on which the service will run
-EXPOSE 8080
+EXPOSE 3000
 
 # Define the command to run the service
 CMD npm start
