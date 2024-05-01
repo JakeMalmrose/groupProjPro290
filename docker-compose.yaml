@@ -1,0 +1,101 @@
+# version: '3'
+
+services:
+# ----------------- Service Containers -----------------
+
+  SEN300LightService:
+    build: ./SEN300VaporGameAPI
+    image: sen300vaporgameapi
+    ports:
+      - 8080:8080
+    networks:
+      - VaporNet
+    depends_on:
+      - SEN300LightServiceDBMongo
+    # deploy:
+    #   mode: replicated
+    #   replicas: 3
+
+
+# ----------------- Database Containers -----------------
+  # SEN300LightServiceDBMongo:
+  #   container_name: SEN300LightCatalogDBMongo
+  #   image: mongo:latest
+  #   # restart: always
+  #   hostname: SEN300LightCatalogDBMongo
+  #   ports:
+  #     - "2717:27017"
+  #   networks:
+  #     - VaporNet
+  #   volumes:
+  #     - mongodb_data:/data/db/catalog
+
+
+# ----------------- Registry and Gateway -----------------
+  # SEN300EurekaLightRegistry:
+  #   container_name: SEN300EurekaLightRegistry
+  #   image: steeltoeoss/eureka-server:latest
+  #   # restart: always
+  #   hostname: SEN300EurekaLightRegistry
+  #   ports:
+  #     - "8762:8761"
+  #   networks:
+  #     - VaporNet
+
+  # SEN300LightAPIOcelotGateway:
+  #   container_name: SEN300LightAPIOcelotGateway
+  #   build:
+  #     context: ./dotnet-apigateway-ocelot
+  #     dockerfile: Dockerfile
+  #   image: sen300ocelotgatewayapi:1
+  #   # restart: always
+  #   hostname: SEN300LightAPIOcelotGateway
+  #   ports:
+  #     - "5042:8080"
+  #   networks:
+  #     - VaporNet
+  #   depends_on:
+  #     - SEN300EurekaLightRegistry
+
+# ----------------- Kafka and Zookeeper -----------------
+  Zookeeper:  
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2182:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - VaporNet
+
+  Kafka: 
+    image: 'bitnami/kafka:latest'
+    restart: always
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=Zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://Kafka:9092
+    depends_on:
+      - Zookeeper
+    networks:
+      - VaporNet
+# ------------------------- EMAIl ------------------------
+
+  # Emailer:  #Kafka Message consumer
+  #   build: ./email_service
+  #   restart: always
+  #   image: email_service
+  #   ports:
+  #     - 0000:8080
+  #   depends_on:
+  #     - Kafka
+  #   networks:
+  #     - VaporNet
+
+networks:
+  VaporNet:
+    external: false
+  
+# volumes:
+#   mongodb_data:
