@@ -3,15 +3,15 @@
 services:
 # ----------------- Service Containers -----------------
 
-  SEN300LightService:
-    build: ./SEN300VaporGameAPI
-    image: sen300vaporgameapi
+  PRO290VaporGameAPI:
+    build: ./PRO290VaporGameAPI
+    image: vaporgameapi
     ports:
       - 8080:8080
     networks:
       - VaporNet
-    depends_on:
-      - SEN300LightServiceDBMongo
+    # depends_on:
+    #   - SEN300LightServiceDBMongo
     # deploy:
     #   mode: replicated
     #   replicas: 3
