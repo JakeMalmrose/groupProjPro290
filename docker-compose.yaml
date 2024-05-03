@@ -19,24 +19,24 @@ services:
     networks:
       - VaporNet
     # depends_on:
-    #   - SEN300LightServiceDBMongo
+    #   - VaporDBdynamo
     # deploy:
     #   mode: replicated
     #   replicas: 3
 
 
 # ----------------- Database Containers -----------------
-  # SEN300LightServiceDBMongo:
-  #   container_name: SEN300LightCatalogDBMongo
-  #   image: mongo:latest
-  #   # restart: always
-  #   hostname: SEN300LightCatalogDBMongo
-  #   ports:
-  #     - "2717:27017"
-  #   networks:
-  #     - VaporNet
-  #   volumes:
-  #     - mongodb_data:/data/db/catalog
+  VaporDynamoDB:
+    container_name: VaporGameDynamoDB
+    image: amazon/dynamodb-local
+    # restart: always
+    hostname: VaporGameDynamoDB
+    ports:
+      - "8090:8000"
+    networks:
+      - VaporNet
+    volumes:
+      - dynamodb_data:/data/db/games
 
 
 # ----------------- Registry and Gateway -----------------
@@ -105,5 +105,5 @@ networks:
   VaporNet:
     external: false
   
-# volumes:
-#   mongodb_data:
+volumes:
+  dynamodb_data:
