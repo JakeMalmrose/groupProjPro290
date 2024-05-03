@@ -67,8 +67,8 @@ func getContentHTML(tmpl string) string {
 	return contentBuf.String()
 }
 
-func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
-	t, err := template.ParseFiles("templates/" + tmpl)
+func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
+	t, err := template.ParseFiles("templates/" + templateName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
