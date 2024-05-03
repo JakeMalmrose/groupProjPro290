@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import pro290.vaporgame.PRO290VaporGameAPI.Model.Game;
+//import pro290.vaporgame.PRO290VaporGameAPI.Repositories.GameRepository;
 
 import java.util.Optional;
 
@@ -11,8 +12,8 @@ import java.util.Optional;
 @RequestMapping(value = "/game")
 public class GameRestController {
 
-    @Autowired
-    private GameRepository repository;
+//    @Autowired
+//    private GameRepository repository;
 
     @GetMapping("/Example")
     @ResponseStatus(HttpStatus.OK)
@@ -22,33 +23,33 @@ public class GameRestController {
                     "Riot Games");
     }
 
-    @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Optional<Game> GetGames(@PathVariable String id) {
-        return repository.findById(id);
-    }
-
-    @PostMapping("/")
-    @ResponseStatus(HttpStatus.CREATED)
-    public String CreateGames(Game game) {
-        return repository.save(game).getId();
-    }
-
-    @PatchMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Game UpdateGames(@PathVariable String id, Game game) {
-        Game ogGame = repository.findById(id).get();
-        game.setId(ogGame.getId());
-        game.setCreationDate(ogGame.getCreationDate());
-
-        return repository.save(game);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void DeleteGames(@PathVariable String id) {
-        repository.deleteById(id);
-    }
+//    @GetMapping("/{id}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public Optional<Game> GetGames(@PathVariable String id) {
+//        return repository.findById(id);
+//    }
+//
+//    @PostMapping("/")
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public String CreateGames(Game game) {
+//        return repository.save(game).getId();
+//    }
+//
+//    @PatchMapping("/{id}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public Game UpdateGames(@PathVariable String id, Game game) {
+//        Game ogGame = repository.findById(id).get();
+//        game.setId(ogGame.getId());
+//        game.setCreationDate(ogGame.getCreationDate());
+//
+//        return repository.save(game);
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public void DeleteGames(@PathVariable String id) {
+//        repository.deleteById(id);
+//    }
 
 
 
