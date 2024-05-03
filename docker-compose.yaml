@@ -5,7 +5,7 @@ services:
   frontend:
     image: frontend:latest
     build:
-      context: ./frontend
+      context: ./frontend-service-go
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
