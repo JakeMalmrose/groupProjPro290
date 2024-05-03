@@ -7,7 +7,7 @@
     
     <h3>Owned Games</h3>
     <div id="owned-games-list">
-        <button hx-get="/api/profile/${user.username}/games" hx-target="#games-table" hx-trigger="click, load">
+        <button hx-get="/profile/${user.username}/games" hx-target="#games-table" hx-trigger="click, load">
             Load Owned Games
         </button>
         <table id="games-table">
