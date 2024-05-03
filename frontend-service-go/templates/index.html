@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vapor - Home</title>
+    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+                <li><a href="/store">Store</a></li>
+                <li><a href="/library">Library</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="content">
+            {{if .Content}}
+                {{.Content}}
+            {{else}}
+                <h1>Vapor</h1>
+                <p>This is the home page, please login or peep the store page</p>
+            {{end}}
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Vapor Games. No rights reserved.</p>
+    </footer>
+
+    <script>
+        // HTMX event listeners and any additional JavaScript code
+    </script>
+</body>
+</html>
