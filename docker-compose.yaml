@@ -18,6 +18,20 @@ services:
       - 8080:8080
     networks:
       - VaporNet
+  games-service:
+    build: ./games-service
+    container_name: games-service
+    ports:
+      - "8080"
+    environment:
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - AWS_REGION=us-west-2
+      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+    depends_on:
+      - dynamodb-local
+    networks:
+      - VaporNet
     # depends_on:
     #   - VaporDBdynamo
     # deploy:
@@ -37,6 +51,16 @@ services:
       - VaporNet
     volumes:
       - dynamodb_data:/data/db/games
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: dynamodb-local
+    ports:
+      - "8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    volumes:
+      - "./dynamodb_data:/home/dynamodblocal/data"
+    networks:
+      - VaporNet
 
 
 # ----------------- Registry and Gateway -----------------
