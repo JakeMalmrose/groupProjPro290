@@ -8,6 +8,7 @@ import (
     "log"
     "net/http"
     "os"
+    "html/template"
 )
 
 type Game struct {
@@ -58,6 +59,21 @@ func getGamesHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Render the games list template with the retrieved games data
-    // ...
+    renderTemplate(w, "gameslist.html", map[string]interface{}{
+        "Games": games,
+    })
+
+}
+
+func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
+	t, err := template.ParseFiles("templates/" + templateName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = t.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

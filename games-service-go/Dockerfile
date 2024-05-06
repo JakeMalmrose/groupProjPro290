@@ -12,6 +12,7 @@ RUN go mod download
 
 # Copy the games service source code to the working directory
 COPY main.go ./
+COPY templates/ ./templates/
 
 # Build the games service executable
 RUN go build -o games-service main.go
