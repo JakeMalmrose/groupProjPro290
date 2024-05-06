@@ -1,6 +1,6 @@
 module github.com/Draupniyr/games-service
 
-go 1.22.2
+go 1.22
 
 require github.com/aws/aws-sdk-go v1.52.2
 

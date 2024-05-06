@@ -19,7 +19,7 @@ services:
     networks:
       - VaporNet
   games-service:
-    build: ./games-service
+    build: ./games-service-go
     container_name: games-service
     ports:
       - "8080"
