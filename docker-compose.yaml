@@ -78,20 +78,21 @@ services:
     container_name: VaporGameDynamoDB
     ports:
       - "8000"
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data/game"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     volumes:
-      - "./dynamodb_data:/home/dynamodblocal/data/game"
+      - "./dynamodb_data/game:/home/dynamodblocal/data"
     networks:
       - VaporNet
   
   VaporCartDynamoDB:
     image: amazon/dynamodb-local:latest
     container_name: VaporCartDynamoDB
+
     ports:
       - "8000"
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data/cart"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     volumes:
-      - "./dynamodb_data:/home/dynamodblocal/data/cart"
+      - "./dynamodb_data/cart:/home/dynamodblocal/data"
     networks:
       - VaporNet
 
@@ -99,6 +100,7 @@ services:
   VaporCartDynamoDB-init:
     depends_on:
       - VaporCartDynamoDB
+    restart: on-failure
     image: amazon/aws-cli
     environment:
       AWS_ACCESS_KEY_ID: admin
@@ -115,11 +117,11 @@ services:
     networks:
       - VaporNet
 
-  
   VaporGameDynamoDB-init:
     depends_on:
       - VaporGameDynamoDB
     image: amazon/aws-cli
+    restart: on-failure
     environment:
       AWS_ACCESS_KEY_ID: admin
       AWS_SECRET_ACCESS_KEY: admin
@@ -135,8 +137,6 @@ services:
     networks:
       - VaporNet
 
-  
-
 # ----------------- Registry and Gateway -----------------
   consul:
     image: consul:1.12.2
@@ -144,6 +144,7 @@ services:
       - "8500:8500"
     networks:
       - VaporNet
+    restart: on-failure
   traefik:
     image: traefik:v2.4
     command:
