@@ -10,7 +10,7 @@ import (
     "os"
     "html/template"
     "time"
-    "go.etcd.io/etcd/clientv3"
+    "go.etcd.io/bbolt"
     "context"
 )
 
