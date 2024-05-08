@@ -1,4 +1,3 @@
-version: "0.1"
 
 services:
 # ----------------- Service Containers -----------------
@@ -11,13 +10,15 @@ services:
       - "3000:3000"
     networks:
       - VaporNet
-  PRO290VaporGameAPI:
-    build: ./PRO290VaporGameAPI
-    image: vaporgameapi
-    ports:
-      - 8080:8080
-    networks:
-      - VaporNet
+
+  # PRO290VaporGameAPI:
+  #   build: ./PRO290VaporGameAPI
+  #   image: vaporgameapi
+  #   ports:
+  #     - 8080:8080
+  #   networks:
+  #     - VaporNet
+
   games-service:
     build: ./games-service-go
     container_name: games-service
@@ -27,9 +28,28 @@ services:
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_REGION=us-west-2
-      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - DYNAMODB_ENDPOINT=http://VaporGameDynamoDB:8000
     depends_on:
-      - dynamodb-local
+      - VaporGameDynamoDB
+    networks:
+      - VaporNet
+    # deploy:
+    #   mode: replicated
+    #   replicas: 3
+
+    
+  carts-service:
+    build: ./carts-service-go
+    container_name: carts-service
+    ports:
+      - "8080"
+    environment:
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - AWS_REGION=us-west-2
+      - DYNAMODB_ENDPOINT=http://VaporCartDynamoDB:8000
+    depends_on:
+      - VaporCartDynamoDB
     networks:
       - VaporNet
     # depends_on:
@@ -39,29 +59,30 @@ services:
     #   replicas: 3
 
 
+
+
 # ----------------- Database Containers -----------------
-  VaporDynamoDB:
-    container_name: VaporGameDynamoDB
-    image: amazon/dynamodb-local
-    # restart: always
-    hostname: VaporGameDynamoDB
-    ports:
-      - "8090:8000"
-    networks:
-      - VaporNet
-    volumes:
-      - dynamodb_data:/data/db/games
-  dynamodb-local:
+  VaporGameDynamoDB:
     image: amazon/dynamodb-local:latest
-    container_name: dynamodb-local
+    container_name: VaporGameDynamoDB
     ports:
       - "8000"
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data/game"
     volumes:
-      - "./dynamodb_data:/home/dynamodblocal/data"
+      - "./dynamodb_data:/home/dynamodblocal/data/game"
     networks:
       - VaporNet
-
+  
+  VaporCartDynamoDB:
+    image: amazon/dynamodb-local:latest
+    container_name: VaporCartDynamoDB
+    ports:
+      - "8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data/cart"
+    volumes:
+      - "./dynamodb_data:/home/dynamodblocal/data/cart"
+    networks:
+      - VaporNet
 
 # ----------------- Registry and Gateway -----------------
   # SEN300EurekaLightRegistry:
