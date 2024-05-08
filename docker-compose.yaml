@@ -48,10 +48,9 @@ services:
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_REGION=us-west-2
       - DYNAMODB_ENDPOINT=http://VaporCartDynamoDB:8000
-      - ETCD_ENDPOINT=etcd:2379
     depends_on:
       - VaporCartDynamoDB
-      - etcd
+      - consul
       - traefik
     networks:
       - VaporNet     
@@ -92,21 +91,20 @@ services:
       - VaporNet
 
 # ----------------- Registry and Gateway -----------------
-
-  
-
+  consul:
+    image: consul:latest
+    ports:
+      - "8500:8500"
   traefik:
     image: traefik:v2.4
     command:
       - --entrypoints.web.address=:80
-      - --providers.etcd.endpoints=etcd:2379
-      - --providers.etcd.prefix=/traefik
       - --api.insecure=true
     ports:
       - "80:80"
       - "8080:8080"
     depends_on:
-      - etcd
+      - consul
     networks:
       - VaporNet
   # SEN300EurekaLightRegistry:
@@ -176,4 +174,3 @@ networks:
   
 volumes:
   dynamodb_data:
-  etcd_data:
