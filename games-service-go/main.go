@@ -9,6 +9,9 @@ import (
     "net/http"
     "os"
     "html/template"
+    "time"
+    "go.etcd.io/etcd/clientv3"
+    "context"
 )
 
 type Game struct {
@@ -36,6 +39,26 @@ func init() {
 }
 
 func main() {
+    etcdEndpoint := os.Getenv("ETCD_ENDPOINT")
+    cli, err := clientv3.New(clientv3.Config{
+        Endpoints:   []string{etcdEndpoint},
+        DialTimeout: 5 * time.Second,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer cli.Close()
+
+    // Register the games service with etcd
+    serviceKey := "/traefik/http/services/games/loadbalancer/servers/0/url"
+    serviceValue := "http://games-service:8080"
+    _, err = cli.Put(context.Background(), serviceKey, serviceValue)
+    if err != nil {
+        log.Fatal(err)
+    }
+    log.Printf("Registered service: %s -> %s\n", serviceKey, serviceValue)
+
+
     http.HandleFunc("/games", getGamesHandler)
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
