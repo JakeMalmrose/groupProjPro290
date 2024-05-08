@@ -34,6 +34,10 @@ services:
       - VaporGameDynamoDB
     networks:
       - VaporNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.games.rule=PathPrefix(`/games`)"
+      - "traefik.http.services.games.loadbalancer.server.port=8080"
     # deploy:
     #   mode: replicated
     #   replicas: 3
@@ -102,6 +106,8 @@ services:
     image: traefik:v2.4
     command:
       - --entrypoints.web.address=:80
+      - --providers.consul=true
+      - --providers.consul.endpoints=consul:8500
       - --api.insecure=true
     ports:
       - "80:80"
