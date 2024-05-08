@@ -15,7 +15,7 @@ services:
     build: ./PRO290VaporGameAPI
     image: vaporgameapi
     ports:
-      - 8080:8080
+      - "8080"
     networks:
       - VaporNet
   games-service:
@@ -28,10 +28,17 @@ services:
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_REGION=us-west-2
       - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - ETCD_ENDPOINT=etcd:2379
     depends_on:
       - dynamodb-local
+      - etcd
+      - traefik
     networks:
-      - VaporNet
+      - VaporNet     
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.games.rule=PathPrefix(`/games`)"
+      - "traefik.http.services.games.loadbalancer.server.port=8080"
     # depends_on:
     #   - VaporDBdynamo
     # deploy:
@@ -64,6 +71,33 @@ services:
 
 
 # ----------------- Registry and Gateway -----------------
+
+  etcd:
+    image: bitnami/etcd:3
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+    volumes:
+      - etcd_data:/bitnami/etcd
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    networks:
+      - VaporNet
+
+  traefik:
+    image: traefik:v2.4
+    command:
+      - --entrypoints.web.address=:80
+      - --providers.etcd.endpoints=etcd:2379
+      - --providers.etcd.prefix=/traefik
+      - --api.insecure=true
+    ports:
+      - "80:80"
+      - "8080:8080"
+    depends_on:
+      - etcd
+    networks:
+      - VaporNet
   # SEN300EurekaLightRegistry:
   #   container_name: SEN300EurekaLightRegistry
   #   image: steeltoeoss/eureka-server:latest
@@ -131,3 +165,4 @@ networks:
   
 volumes:
   dynamodb_data:
+  etcd_data:
