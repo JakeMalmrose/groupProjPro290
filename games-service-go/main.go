@@ -5,23 +5,23 @@ import (
     "github.com/aws/aws-sdk-go/aws/session"
     "github.com/aws/aws-sdk-go/service/dynamodb"
     "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+    "github.com/hashicorp/consul/api"
+    "html/template"
     "log"
     "net/http"
     "os"
-    "html/template"
-    "time"
-    "go.etcd.io/bbolt"
-    "context"
+    "strconv"
 )
 
 type Game struct {
-    ID     string  `json:"id"`
-    Title  string  `json:"title"`
-    Price  float64 `json:"price"`
-    Owned  bool    `json:"owned"`
+    ID    string  `json:"id"`
+    Title string  `json:"title"`
+    Price float64 `json:"price"`
+    Owned bool    `json:"owned"`
 }
 
 var dynamodbClient *dynamodb.DynamoDB
+var consulClient *api.Client
 
 func init() {
     region := os.Getenv("AWS_REGION")
@@ -36,31 +36,38 @@ func init() {
     }
 
     dynamodbClient = dynamodb.New(sess)
+
+    consulConfig := api.DefaultConfig()
+    consulConfig.Address = os.Getenv("CONSUL_ADDRESS")
+    consulClient, err = api.NewClient(consulConfig)
+    if err != nil {
+        log.Fatal("Error creating Consul client:", err)
+    }
 }
 
 func main() {
-    etcdEndpoint := os.Getenv("ETCD_ENDPOINT")
-    cli, err := clientv3.New(clientv3.Config{
-        Endpoints:   []string{etcdEndpoint},
-        DialTimeout: 5 * time.Second,
-    })
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer cli.Close()
+    port := 8080
+    serviceName := "games-service"
+    serviceID := "games-service-1"
 
-    // Register the games service with etcd
-    serviceKey := "/traefik/http/services/games/loadbalancer/servers/0/url"
-    serviceValue := "http://games-service:8080"
-    _, err = cli.Put(context.Background(), serviceKey, serviceValue)
+    err := registerService(serviceName, serviceID, port)
     if err != nil {
-        log.Fatal(err)
+        log.Fatal("Error registering service with Consul:", err)
     }
-    log.Printf("Registered service: %s -> %s\n", serviceKey, serviceValue)
-
 
     http.HandleFunc("/games", getGamesHandler)
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    log.Printf("Games service listening on port %d", port)
+    log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
+}
+
+func registerService(serviceName, serviceID string, port int) error {
+    service := &api.AgentServiceRegistration{
+        ID:      serviceID,
+        Name:    serviceName,
+        Address: "games-service",
+        Port:    port,
+    }
+    return consulClient.Agent().ServiceRegister(service)
 }
 
 func getGamesHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,18 +92,17 @@ func getGamesHandler(w http.ResponseWriter, r *http.Request) {
     renderTemplate(w, "gameslist.html", map[string]interface{}{
         "Games": games,
     })
-
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
-	t, err := template.ParseFiles("templates/" + templateName)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    t, err := template.ParseFiles("templates/" + templateName)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	err = t.Execute(w, data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+    err = t.Execute(w, data)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
 }
