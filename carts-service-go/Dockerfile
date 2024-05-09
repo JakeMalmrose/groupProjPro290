@@ -1,5 +1,5 @@
 # Use the official Go image as the base image
-FROM golang:1.22
+FROM golang:1.16
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -10,15 +10,15 @@ COPY go.mod go.sum ./
 # Download and cache the Go module dependencies
 RUN go mod download
 
-# Copy the games service source code to the working directory
+# Copy the carts service source code to the working directory
 COPY main.go ./
 COPY templates/ ./templates/
 
-# Build the games service executable
-RUN go build -o games-service main.go
+# Build the carts service executable
+RUN go build -o carts-service main.go
 
-# Expose the port on which the games service will run
+# Expose the port on which the carts service will run
 EXPOSE 8080
 
 # Set the entry point for the container
-CMD ["./games-service"]
+CMD ["./carts-service"]
