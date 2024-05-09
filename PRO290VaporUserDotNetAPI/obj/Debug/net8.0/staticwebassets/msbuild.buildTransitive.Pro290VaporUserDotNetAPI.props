@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Pro290VaporUserDotNetAPI.props" />
+</Project>

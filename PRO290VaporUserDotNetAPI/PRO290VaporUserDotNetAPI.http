@@ -1,0 +1,6 @@
+@PRO290VaporUserDotNetAPI_HostAddress = http://localhost:5041
+
+GET {{PRO290VaporUserDotNetAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
