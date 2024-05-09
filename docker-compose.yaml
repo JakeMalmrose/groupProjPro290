@@ -136,6 +136,18 @@ services:
           --endpoint-url http://VaporGameDynamoDB:8000 --region us-west-2
     networks:
       - VaporNet
+      
+  PRO290VaporOrderServiceDBSqlServer:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: PRO290VaporOrderServiceDBSqlServer
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: "abc123!!@"
+    ports:
+      - "1433:1433"
+    networks:
+      - VaporNet
+    restart: unless-stopped
 
 # ----------------- Registry and Gateway -----------------
   consul:
