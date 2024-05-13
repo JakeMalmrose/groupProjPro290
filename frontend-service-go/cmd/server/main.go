@@ -4,7 +4,23 @@ import (
 	"bytes"
 	"html/template"
 	"net/http"
+	"log"
+	"github.com/hashicorp/consul/api"
+	"os"
+	"strconv"
 )
+
+var consulClient *api.Client
+
+func init() {
+    consulConfig := api.DefaultConfig()
+    consulConfig.Address = os.Getenv("CONSUL_ADDRESS")
+    var err error
+    consulClient, err = api.NewClient(consulConfig)
+    if err != nil {
+        log.Fatal("Error creating Consul client:", err)
+    }
+}
 
 func main() {
 	fs := http.FileServer(http.Dir("static"))
@@ -19,6 +35,10 @@ func main() {
 	http.HandleFunc("/library", handleLibrary)
 
 	
+	err := registerService()
+    if err != nil {
+        log.Fatal("Error registering service with Consul:", err)
+    }
 
 	http.ListenAndServe(":3000", nil)
 }
@@ -104,4 +124,26 @@ func renderTemplate(w http.ResponseWriter, templateName string, data interface{}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func registerService() error {
+    serviceName := os.Getenv("SERVICE_NAME")
+    serviceID := os.Getenv("SERVICE_ID")
+    port, _ := strconv.Atoi(os.Getenv("SERVICE_PORT"))
+
+    tags := []string{
+		"TRAEFIK_ENABLE=true",
+		"traefik.http.routers.frontendservice.rule=PathPrefix(`/frontend`)",
+		"TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000",
+	}
+
+    service := &api.AgentServiceRegistration{
+        ID:      serviceID,
+        Name:    serviceName,
+        Address: "frontend-service",
+        Port:    port,
+        Tags:    tags,
+    }
+
+    return consulClient.Agent().ServiceRegister(service)
 }
