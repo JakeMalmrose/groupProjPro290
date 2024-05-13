@@ -32,6 +32,11 @@ main {
     padding: 20px;
 }
 
+h1 {
+    margin-top: 0;
+    text-align: center;
+}
+
 footer {
     background-color: #3c3b3f;
     color: #fff;
