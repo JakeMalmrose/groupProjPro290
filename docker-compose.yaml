@@ -10,6 +10,19 @@ services:
       - "3000:3000"
     networks:
       - VaporNet
+    depends_on:
+      - traefik
+    environment:
+      - CONSUL_ADDRESS=consul:8500
+      - SERVICE_NAME=frontend-service
+      - SERVICE_ID=frontend-service-1
+      - SERVICE_PORT=3000
+      - TRAEFIK_ENABLE=true
+      - TRAEFIK_HTTP_ROUTERS_FRONTEND_RULE=PathPrefix(`/`)
+      - TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000
+    labels:
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
   # PRO290VaporGameAPI:
   #   build: ./PRO290VaporGameAPI
@@ -35,7 +48,6 @@ services:
     networks:
       - VaporNet
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.games.rule=PathPrefix(`/games`)"
       - "traefik.http.services.games.loadbalancer.server.port=8080"
     # deploy:
@@ -146,17 +158,20 @@ services:
       - VaporNet
     restart: on-failure
   traefik:
-    image: traefik:v2.4
+    image: traefik:latest
+    container_name: traefik
     command:
-      - --entrypoints.web.address=:80
-      - --providers.consul=true
-      - --providers.consul.endpoints=consul:8500
-      - --api.insecure=true
+        - '--api.insecure=true'
+        - '--providers.consulcatalog=true'
+        - '--providers.consulcatalog.prefix=traefik'
+        - '--providers.consulcatalog.endpoint.address=consul:8500'
+        - '--serversTransport.insecureSkipVerify=true'
+        - '--entryPoints.web.address=:80'
+        - '--log.level=DEBUG'
     ports:
-      - "80:80"
-      - "8080:8080"
-    depends_on:
-      - consul
+      - 80:80
+      - 8080:8080
+    restart: always
     networks:
       - VaporNet
   # SEN300EurekaLightRegistry:

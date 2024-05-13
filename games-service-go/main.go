@@ -47,10 +47,8 @@ func init() {
 
 func main() {
     port := 8080
-    serviceName := "games-service"
-    serviceID := "games-service-1"
 
-    err := registerService(serviceName, serviceID, port)
+    err := registerService("games-service", "games-service-1", 8080)
     if err != nil {
         log.Fatal("Error registering service with Consul:", err)
     }
