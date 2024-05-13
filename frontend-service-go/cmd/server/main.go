@@ -132,9 +132,10 @@ func registerService() error {
     port, _ := strconv.Atoi(os.Getenv("SERVICE_PORT"))
 
     tags := []string{
-        os.Getenv("TRAEFIK_HTTP_ROUTERS_FRONTEND_RULE"),
-        os.Getenv("TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT"),
-    }
+		"TRAEFIK_ENABLE=true",
+		"traefik.http.routers.frontendservice.rule=PathPrefix(`/frontend`)",
+		"TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000",
+	}
 
     service := &api.AgentServiceRegistration{
         ID:      serviceID,
