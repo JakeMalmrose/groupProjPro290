@@ -22,7 +22,7 @@ type Cart struct {
 type Game struct {
 	GameID string `json:"GameID"`
 	Title  string `json:"Title"`
-	Price  string `json:"Price"`
+	Price  float64 `json:"Price"`
 	Owned  bool   `json:"Owned"`
 }
 
@@ -32,20 +32,22 @@ type DynamoCart struct {
 }
 
 func CartToDynamoDBItem(cart Cart) map[string]*dynamodb.AttributeValue {
-	item := map[string]*dynamodb.AttributeValue{
-		"ID": {
-			S: aws.String(cart.ID),
-		},
+	// Convert the Cart struct to a DynamoDB item
+	item, err := dynamodbattribute.MarshalMap(cart)
+	if err != nil {
+		log.Println("Error marshalling Cart:", err)
+		return nil
 	}
 
+	// Convert the []Game slice to a DynamoDB list
 	var games []*dynamodb.AttributeValue
 	for _, game := range cart.Games {
-		gameAttributeValue, err := dynamodbattribute.MarshalMap(game)
+		gameItem, err := dynamodbattribute.MarshalMap(game)
 		if err != nil {
-			log.Println("Error marshaling game:", err)
+			log.Println("Error marshalling Game:", err)
 			return nil
 		}
-		games = append(games, &dynamodb.AttributeValue{M: gameAttributeValue})
+		games = append(games, &dynamodb.AttributeValue{M: gameItem})
 	}
 	item["Games"] = &dynamodb.AttributeValue{L: games}
 
@@ -208,8 +210,6 @@ func deleteCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-
 
 func updateCartID(w http.ResponseWriter, r *http.Request) {
 	// get the cart ID from the URL
