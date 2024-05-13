@@ -20,9 +20,6 @@ services:
       - TRAEFIK_ENABLE=true
       - TRAEFIK_HTTP_ROUTERS_FRONTEND_RULE=PathPrefix(`/`)
       - TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000
-    labels:
-      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
   # PRO290VaporGameAPI:
   #   build: ./PRO290VaporGameAPI
