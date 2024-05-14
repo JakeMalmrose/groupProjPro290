@@ -132,8 +132,8 @@ func main() {
 		log.Fatal("Error registering service with Consul:", err)
 	}
 
-	http.HandleFunc("/games", GamesHandler)
-	http.HandleFunc("/games/{id}", GamesHandlerID)
+	http.HandleFunc("/", GamesHandler)
+	http.HandleFunc("/{id}", GamesHandlerID)
 	log.Printf("Games service listening on port %d", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
@@ -394,6 +394,7 @@ func updateGameID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
 	t, err := template.ParseFiles("templates/" + templateName)
