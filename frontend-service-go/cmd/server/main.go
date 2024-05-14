@@ -133,7 +133,7 @@ func registerService() error {
 
     tags := []string{
 		"TRAEFIK_ENABLE=true",
-		"traefik.http.routers.frontendservice.rule=PathPrefix(`/frontend`)",
+		"traefik.http.routers.frontendservice.rule=PathPrefix(`/`)",
 		"TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000",
 	}
 

@@ -1,7 +1,7 @@
 
 services:
 # ----------------- Service Containers -----------------
-  frontend:
+  frontend-service:
     image: frontend:latest
     build:
       context: ./frontend-service-go
