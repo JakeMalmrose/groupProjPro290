@@ -126,27 +126,37 @@ func init() {
 
 func main() {
 	port := 8080
-	serviceName := "games-service"
-	serviceID := "games-service-1"
 
-	err := registerService(serviceName, serviceID, port)
+	err := registerService()
 	if err != nil {
 		log.Fatal("Error registering service with Consul:", err)
 	}
 
-	http.HandleFunc("/games", GamesHandler)
-	http.HandleFunc("/games/{id}", GamesHandlerID)
+	http.HandleFunc("/", GamesHandler)
+	http.HandleFunc("/{id}", GamesHandlerID)
 	log.Printf("Games service listening on port %d", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
 
-func registerService(serviceName, serviceID string, port int) error {
+func registerService() error {
+	serviceName := os.Getenv("SERVICE_NAME")
+	serviceID := os.Getenv("SERVICE_ID")
+	port, _ := strconv.Atoi(os.Getenv("SERVICE_PORT"))
+
+	tags := []string{
+		"TRAEFIK_ENABLE=true",
+		"traefik.http.routers.gamesservice.rule=PathPrefix(`/games`)",
+		"TRAEFIK_HTTP_SERVICES_GAMES_LOADBALANCER_SERVER_PORT=3000",
+	}
+
 	service := &api.AgentServiceRegistration{
 		ID:      serviceID,
 		Name:    serviceName,
 		Address: "games-service",
 		Port:    port,
+		Tags:    tags,
 	}
+
 	return consulClient.Agent().ServiceRegister(service)
 }
 

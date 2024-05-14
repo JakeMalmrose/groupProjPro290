@@ -33,20 +33,23 @@ services:
     build: ./games-service-go
     container_name: games-service
     ports:
-      - "8083:8080"
+      - "8080"
     environment:
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_REGION=us-west-2
       - DYNAMODB_ENDPOINT=http://VaporGameDynamoDB:8000
       - CONSUL_ADDRESS=consul:8500
+      - SERVICE_NAME=games-service
+      - SERVICE_ID=games-service-1
+      - SERVICE_PORT=3000
+      - TRAEFIK_ENABLE=true
+      - TRAEFIK_HTTP_ROUTERS_GAMES_RULE=PathPrefix(`/games`)
+      - TRAEFIK_HTTP_SERVICES_GAMES_LOADBALANCER_SERVER_PORT=3000
     depends_on:
       - VaporGameDynamoDB
     networks:
-      - VaporNet
-    labels:
-      - "traefik.http.routers.games.rule=PathPrefix(`/games`)"
-      - "traefik.http.services.games.loadbalancer.server.port=8080"
+      - VaporNet     
     # deploy:
     #   mode: replicated
     #   replicas: 3
