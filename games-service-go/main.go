@@ -7,12 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/google/uuid"
 	"github.com/hashicorp/consul/api"
 
 	database "github.com/Draupniyr/games-service/Database"
@@ -168,49 +163,67 @@ func updateGameID(w http.ResponseWriter, r *http.Request) {
 
 func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// get the Game ID from the URL
-	gameID := r.FormValue("gameID")
-	updateID := r.FormValue("updateID")
 
 	switch r.Method {
 	case http.MethodPost:
-		createUpdate(w, r, gameID)
+		createUpdate(w, r)
 	case http.MethodDelete:
-		deleteUpdate(w, r, gameID, updateID)
+		deleteUpdate(w, r)
 	case http.MethodPut:
-		updateUpdate(w, r, gameID, updateID)
+		updateUpdate(w, r)
 	case http.MethodGet:
-		getUpdate(w, r, gameID, updateID)
+		getUpdate(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
-func createUpdate(w http.ResponseWriter, r *http.Request, gameID string) {
-    // Parse the request body
-    var updateRequest structs.UpdatePostObject
-    err := json.NewDecoder(r.Body).Decode(&updateRequest)
-    if err != nil {
-        log.Println("Error decoding request body:", err)
-        http.Error(w, "Bad Request", http.StatusBadRequest)
-        return
-    }
-    db.CreateUpdate(gameID, updateRequest.UpdatePostObjectToUpdate())
+func createUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID := r.FormValue("gameID")
+	// Parse the request body
+	var updateRequest structs.UpdatePostObject
+	err := json.NewDecoder(r.Body).Decode(&updateRequest)
+	if err != nil {
+		log.Println("Error decoding request body:", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	db.CreateUpdate(gameID, updateRequest.UpdatePostObjectToUpdate())
 }
 
-func deleteUpdate(w http.ResponseWriter, r *http.Request, gameID string, updateID string) {
-    db.DeleteUpdate(gameID, updateID)
+func deleteUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID := r.FormValue("gameID")
+	updateID := r.FormValue("updateID")
+	db.DeleteUpdate(gameID, updateID)
 }
 
-func updateUpdate(w http.ResponseWriter, r *http.Request, gameID string, updateID string) {
-    // Parse the request body
-    var updateRequest structs.UpdatePostObject
-    err := json.NewDecoder(r.Body).Decode(&updateRequest)
-    if err != nil {
-        log.Println("Error decoding request body:", err)
-        http.Error(w, "Bad Request", http.StatusBadRequest)
-        return
-    }
-    db.UpdateUpdate(gameID, updateID, updateRequest)
+func updateUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID := r.FormValue("gameID")
+	updateID := r.FormValue("updateID")
+	// Parse the request body
+	var updateRequest structs.UpdatePostObject
+	err := json.NewDecoder(r.Body).Decode(&updateRequest)
+	if err != nil {
+		log.Println("Error decoding request body:", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	db.UpdateUpdate(gameID, updateID, updateRequest)
+}
+
+func getUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID := r.FormValue("gameID")
+	updateID := r.FormValue("updateID")
+	update, err := db.GetUpdate(gameID, updateID)
+	if err != nil {
+		log.Println("Error getting Update from database:", err)
+		http.Error(w, "Internal Server Error", http.StatusNotFound)
+		return
+	}
+	// todo: Render the template with the retrieved Update data
+	renderTemplate(w, "Update.html", map[string]interface{}{
+		"Update": update,
+	})
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
