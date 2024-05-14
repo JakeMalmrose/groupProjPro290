@@ -77,8 +77,8 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/carts/{ID}", CartsHandlerID)
-	http.HandleFunc("/carts", CartsHandler)
+	http.HandleFunc("/", CartsHandler)
+	http.HandleFunc("/{ID}", CartsHandlerID)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
