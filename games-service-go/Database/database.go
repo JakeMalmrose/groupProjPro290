@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 
-	structs "github.com/Draupniyr/games-service/Structs"
+	structs "github.com/Draupniyr/games-service/structs"
 )
 
 type DataBase struct{

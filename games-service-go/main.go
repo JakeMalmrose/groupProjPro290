@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/consul/api"
 
-	database "github.com/Draupniyr/games-service/Database"
-	structs "github.com/Draupniyr/games-service/Structs"
+	database "github.com/Draupniyr/games-service/database"
+	structs "github.com/Draupniyr/games-service/structs"
 )
 
 var db database.DataBase
