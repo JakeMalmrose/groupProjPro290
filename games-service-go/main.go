@@ -104,7 +104,7 @@ func getGamesID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Render the template with the retrieved Games data
-	renderTemplate(w, "Game.html", map[string]interface{}{
+	renderTemplate(w, "gameslist.html", map[string]interface{}{
 		"Games": games,
 	})
 }
@@ -120,7 +120,7 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderTemplate(w, "Game.html", map[string]interface{}{
+	renderTemplate(w, "gameslist.html", map[string]interface{}{
 		"Games": GamesToDisplay,
 	})
 }
