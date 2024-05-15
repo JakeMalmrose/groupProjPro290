@@ -10,8 +10,14 @@
         <tr>
             <td>{{.ID}}</td>
             <td>{{.Title}}</td>
+            <td>{{.Description}}</td>
+            <td>{{.Tags}}</td>
             <td>{{.Price}}</td>
-            <td>{{.Owned}}</td>
+            <td>{{.Published}}</td>
+            {{range .Updates}}
+                <td>{{.Title}}</td>
+                <td>{{.Description}}</td>
+            {{end}}
         </tr>
         {{end}}
     </table>
