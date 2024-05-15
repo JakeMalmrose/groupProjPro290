@@ -14,7 +14,7 @@ import (
 	structs "github.com/Draupniyr/games-service/structs"
 )
 
-var db database.DataBase
+var db database.Database
 var consulClient *api.Client
 
 func init() {

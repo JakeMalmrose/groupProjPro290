@@ -12,12 +12,11 @@ import (
 	structs "github.com/Draupniyr/games-service/structs"
 )
 
-type DataBase struct{
+type Database struct {
 	DynamodbClient *dynamodb.DynamoDB
 }
 
-
-func (db *DataBase) Init(){
+func (db *Database) Init() {
 	region := os.Getenv("AWS_REGION")
 	endpoint := os.Getenv("DYNAMODB_ENDPOINT")
 
@@ -30,39 +29,39 @@ func (db *DataBase) Init(){
 	}
 
 	db.DynamodbClient = dynamodb.New(sess) //ineffective assignment to field DataBase.DynamodbClient (SA4005)
-	
+
 	// if Games table does not exist, create it maybe
-		_, err = db.DynamodbClient.DescribeTable(&dynamodb.DescribeTableInput{
-			TableName: aws.String("Games"),
+	_, err = db.DynamodbClient.DescribeTable(&dynamodb.DescribeTableInput{
+		TableName: aws.String("Games"),
+	})
+	if err != nil {
+		_, err = db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
+			TableName: aws.
+				String("Games"),
+			AttributeDefinitions: []*dynamodb.AttributeDefinition{
+				{
+					AttributeName: aws.String("ID"),
+					AttributeType: aws.String("S"),
+				},
+			},
+			KeySchema: []*dynamodb.KeySchemaElement{
+				{
+					AttributeName: aws.String("ID"),
+				},
+			},
+			ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ReadCapacityUnits:  aws.Int64(5),
+				WriteCapacityUnits: aws.Int64(5),
+			},
 		})
 		if err != nil {
-			_, err = db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
-				TableName: aws.
-					String("Games"),
-				AttributeDefinitions: []*dynamodb.AttributeDefinition{
-					{
-						AttributeName: aws.String("ID"),
-						AttributeType: aws.String("S"),
-					},
-				},
-				KeySchema: []*dynamodb.KeySchemaElement{
-					{
-						AttributeName: aws.String("ID"),
-					},
-				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
-					ReadCapacityUnits:  aws.Int64(5),
-					WriteCapacityUnits: aws.Int64(5),
-				},
-			})
-			if err != nil {
-				log.Fatal(err)
-			}
+			log.Fatal(err)
 		}
+	}
 }
 
 // ----------------- Games -----------------
-func (db *DataBase) GetGame(ID string) (*structs.Game, error) {
+func (db *Database) GetGame(ID string) (*structs.Game, error) {
 	result, err := db.DynamodbClient.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("Games"),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -83,9 +82,9 @@ func (db *DataBase) GetGame(ID string) (*structs.Game, error) {
 
 	return &game, nil
 }
-func (db *DataBase) SearchGames(search string) ([]structs.Game, error) {
+func (db *Database) SearchGames(search string) ([]structs.Game, error) {
 	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
-		TableName: aws.String("Games"),
+		TableName:        aws.String("Games"),
 		FilterExpression: aws.String("contains(Title, :search) OR contains(Description, :search) OR contains(Tags, :search)"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":search": {
@@ -105,7 +104,7 @@ func (db *DataBase) SearchGames(search string) ([]structs.Game, error) {
 
 	return games, nil
 }
-func (db *DataBase) GetAllGames() ([]structs.Game, error) {
+func (db *Database) GetAllGames() ([]structs.Game, error) {
 	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
 		TableName: aws.String("Games"),
 	})
@@ -121,7 +120,7 @@ func (db *DataBase) GetAllGames() ([]structs.Game, error) {
 
 	return games, nil
 }
-func (db *DataBase) CreateGame(game structs.Game) error {
+func (db *Database) CreateGame(game structs.Game) error {
 	_, err := db.DynamodbClient.PutItem(&dynamodb.PutItemInput{
 		TableName: aws.String("Games"),
 		Item:      game.GameToDynamoDBItem(),
@@ -132,7 +131,7 @@ func (db *DataBase) CreateGame(game structs.Game) error {
 
 	return nil
 }
-func (db *DataBase) UpdateGame(ID string, game structs.Game) error {
+func (db *Database) UpdateGame(ID string, game structs.Game) error {
 	game.ID = ID
 	game.Published = ""
 	updateString := game.GameToUpdateString()
@@ -153,7 +152,7 @@ func (db *DataBase) UpdateGame(ID string, game structs.Game) error {
 
 	return nil
 }
-func (db *DataBase) DeleteGame(ID string) error {
+func (db *Database) DeleteGame(ID string) error {
 	_, err := db.DynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
 		TableName: aws.String("Games"),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -168,7 +167,7 @@ func (db *DataBase) DeleteGame(ID string) error {
 
 	return nil
 }
-func (db * DataBase) DeleteAll() error {
+func (db *Database) DeleteAll() error {
 	db.DynamodbClient.DeleteTable(&dynamodb.DeleteTableInput{
 		TableName: aws.String("Games"),
 	})
@@ -176,7 +175,7 @@ func (db * DataBase) DeleteAll() error {
 }
 
 // ----------------- Updates -----------------
-func (db *DataBase) CreateUpdate(ID string, update structs.Update) error {
+func (db *Database) CreateUpdate(ID string, update structs.Update) error {
 	currentGame, err := db.GetGame(ID)
 	currentGame.Updates = append(currentGame.Updates, update)
 	if err != nil {
@@ -185,7 +184,7 @@ func (db *DataBase) CreateUpdate(ID string, update structs.Update) error {
 	db.UpdateGame(ID, *currentGame)
 	return nil
 }
-func (db *DataBase) DeleteUpdate(ID string, updateID string) error {
+func (db *Database) DeleteUpdate(ID string, updateID string) error {
 	currentGame, err := db.GetGame(ID)
 	if err != nil {
 		return err
@@ -199,7 +198,7 @@ func (db *DataBase) DeleteUpdate(ID string, updateID string) error {
 	db.UpdateGame(ID, *currentGame)
 	return nil
 }
-func (db *DataBase) GetUpdate(ID string, updateID string) (*structs.Update, error) {
+func (db *Database) GetUpdate(ID string, updateID string) (*structs.Update, error) {
 	currentGame, err := db.GetGame(ID)
 	if err != nil {
 		return nil, err
@@ -211,7 +210,7 @@ func (db *DataBase) GetUpdate(ID string, updateID string) (*structs.Update, erro
 	}
 	return nil, nil
 }
-func (db *DataBase) UpdateUpdate(ID string, updateID string, update structs.UpdatePostObject ) error {
+func (db *Database) UpdateUpdate(ID string, updateID string, update structs.UpdatePostObject) error {
 	currentGame, err := db.GetGame(ID)
 	if err != nil {
 		return err
