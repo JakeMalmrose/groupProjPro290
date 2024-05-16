@@ -154,6 +154,7 @@ func (db *Database) AddOrRemoveFromCart(ID string, gamesList []structs.Game) err
 }
 
 func (db *Database) DeleteCart(ID string) error {
+
 	_, err := db.DynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
 		TableName: aws.String("Carts"),
 		Key: map[string]*dynamodb.AttributeValue{

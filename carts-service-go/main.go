@@ -145,7 +145,9 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteCartID(w http.ResponseWriter, r *http.Request) {
+	log.Println("Delete Cart Endpoint Hit")
 	id := r.FormValue("ID")
+	log.Println("ID: ", id)
 	db.DeleteCart(id)
 }
 
@@ -163,15 +165,16 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 	// get the cart ID from the URL
 	id := r.FormValue("ID")
 	// Parse the request body = []Game
-	var updateRequest []structs.Game
-	err := json.NewDecoder(r.Body).Decode(&updateRequest)
+	var gamesArray []structs.Game
+	err := json.NewDecoder(r.Body).Decode(&gamesArray)
 	if err != nil {
 		log.Println("Error decoding request body:", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
+	log.Println("Update Request: ", gamesArray)
 
-	db.AddOrRemoveFromCart(id, updateRequest)
+	db.AddOrRemoveFromCart(id, gamesArray)
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
