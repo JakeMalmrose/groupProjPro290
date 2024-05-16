@@ -33,6 +33,8 @@ func main() {
 	http.HandleFunc("/register", handleRegister)
 	http.HandleFunc("/store", handleStore)
 	http.HandleFunc("/library", handleLibrary)
+	http.HandleFunc("/dev", handleDev)
+	http.HandleFunc("/admin", handleAdmin)
 
 	err := registerService()
 	if err != nil {
@@ -44,6 +46,14 @@ func main() {
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "index.html", nil)
+}
+
+func handleAdmin(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "admin.html", nil)
+}
+
+func handleDev(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "dev.html", nil)
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +117,7 @@ func registerService() error {
 
 	tags := []string{
 		"TRAEFIK_ENABLE=true",
-		"traefik.http.routers.frontendservice.rule=PathPrefix(`/frontend`)",
+		"traefik.http.routers.frontendservice.rule=PathPrefix(`/`)",
 		"TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000",
 	}
 
