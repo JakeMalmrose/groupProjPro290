@@ -6,7 +6,7 @@
         </tr>
         {{range .Carts}}
         <tr>
-            <td>{{.CartID}}</td>
+            <td>{{.ID}}</td>
             <td>
                 <table>
                     <tr>
@@ -17,10 +17,9 @@
                     </tr>
                     {{range .Games}}
                     <tr>
-                        <td>{{.GameID}}</td>
+                        <td>{{.ID}}</td>
                         <td>{{.Title}}</td>
                         <td>{{.Price}}</td>
-                        <td>{{.Owned}}</td>
                     </tr>
                     {{end}}
                 </table>

@@ -128,14 +128,19 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 
 func createCart(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
-	var createRequest structs.CreateCartRequest
-	err := json.NewDecoder(r.Body).Decode(&createRequest)
+	log.Println("Create Cart Endpoint Hit")
+	var gamesArray []structs.Game
+	err := json.NewDecoder(r.Body).Decode(&gamesArray)
 	if err != nil {
 		log.Println("Error decoding request body:", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	log.Println("Create Request: ", createRequest)
+	log.Println("Create Request: ", gamesArray)
+
+	createRequest := structs.CreateCartRequest{
+		Games: gamesArray,
+	}
 	db.CreateAndUpdateCart(createRequest.CreateCartRequestToCart())
 }
 
