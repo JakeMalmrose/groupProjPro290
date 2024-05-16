@@ -81,6 +81,28 @@ services:
     #   mode: replicated
     #   replicas: 3
 
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8080"
+    environment:
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - AWS_REGION=us-west-2
+      - DYNAMODB_ENDPOINT=http://VaporAuthDynamoDB:8000
+    depends_on:
+      - VaporAuthDynamoDB
+      - consul
+      - traefik
+    networks:
+      - VaporNet     
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=PathPrefix(`/auth`)"
+      - "traefik.http.services.auth.loadbalancer.server.port=8080"
+
+
 
 
 
@@ -105,6 +127,16 @@ services:
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     volumes:
       - "./dynamodb_data/cart:/home/dynamodblocal/data"
+    networks:
+      - VaporNet
+  
+  VaporAuthDynamoDB:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "8000"
+    volumes:
+      - "./dynamodb_data/auth:/home/dynamodblocal/data"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
     networks:
       - VaporNet
 
