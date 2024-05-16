@@ -126,8 +126,9 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusNotFound)
 		return
 	}
+	log.Println("GamesToDisplay:", GamesToDisplay)
 
-	renderTemplate(w, "gameslist.html", map[string]interface{}{
+	renderTemplate(w, "gameslist2.html", map[string]interface{}{
 		"Games": GamesToDisplay,
 	})
 }
