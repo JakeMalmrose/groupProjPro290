@@ -130,7 +130,7 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 func createCart(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
 	log.Println("Create Cart Endpoint Hit")
-	var gamesArray []structs.Game
+	var gamesArray structs.Game
 	err := json.NewDecoder(r.Body).Decode(&gamesArray)
 	if err != nil {
 		log.Println("Error decoding request body:", err)
@@ -140,7 +140,7 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 	log.Println("Create Request: ", gamesArray)
 
 	createRequest := structs.CreateCartRequest{
-		Games: gamesArray,
+		Games: []structs.Game{gamesArray},
 	}
 	db.CreateAndUpdateCart(createRequest.CreateCartRequestToCart())
 }
