@@ -39,6 +39,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", GamesHandler)
+	http.HandleFunc("/getform", GamesFormHandler)
 	http.HandleFunc("/{id}", GamesHandlerID)
 	//http.HandleFunc("/{gameID}/{updateID}", GameUpdateHandler)
 	log.Printf("Games service listening on port %d", port)
@@ -65,6 +66,10 @@ func registerService() error {
 	}
 
 	return consulClient.Agent().ServiceRegister(service)
+}
+
+func GamesFormHandler(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "gamesform.html", nil)
 }
 
 func GamesHandlerID(w http.ResponseWriter, r *http.Request) {
