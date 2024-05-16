@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/consul/api"
 
@@ -97,7 +98,7 @@ func CartsHandler(w http.ResponseWriter, r *http.Request) {
 
 func getCartsID(w http.ResponseWriter, r *http.Request) {
 	//get ID from URL
-	id := r.FormValue("ID")
+	id := getIDfromURL(r)
 	// Query the Carts table for the cart with the specified ID
 	cart, err := db.GetCart(id)
 	if err != nil {
@@ -146,7 +147,7 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 
 func deleteCartID(w http.ResponseWriter, r *http.Request) {
 	log.Println("Delete Cart Endpoint Hit")
-	id := r.FormValue("ID")
+	id := getIDfromURL(r)
 	log.Println("ID: ", id)
 	db.DeleteCart(id)
 }
@@ -163,7 +164,7 @@ func deleteCart(w http.ResponseWriter, r *http.Request) {
 
 func updateCartID(w http.ResponseWriter, r *http.Request) {
 	// get the cart ID from the URL
-	id := r.FormValue("ID")
+	id := getIDfromURL(r)
 	// Parse the request body = []Game
 	var gamesArray []structs.Game
 	err := json.NewDecoder(r.Body).Decode(&gamesArray)
@@ -175,6 +176,12 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 	log.Println("Update Request: ", gamesArray)
 
 	db.AddOrRemoveFromCart(id, gamesArray)
+}
+
+func getIDfromURL(r *http.Request) string {
+	url := r.URL.Path
+	parts := strings.Split(url, "/")
+	return parts[len(parts)-1]
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
