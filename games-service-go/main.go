@@ -31,17 +31,19 @@ func init() {
 }
 
 func main() {
-	port := 8080
+	port := 3000
 
 	err := registerService()
 	if err != nil {
 		log.Fatal("Error registering service with Consul:", err)
 	}
 
-	http.HandleFunc("/", GamesHandler)
-	http.HandleFunc("/getform", GamesFormHandler)
-	http.HandleFunc("/{id}", GamesHandlerID)
+
+	http.HandleFunc("/games/getform", GamesFormHandler)
+	http.HandleFunc("/games/{id}", GamesHandlerID)
 	//http.HandleFunc("/{gameID}/{updateID}", GameUpdateHandler)
+
+	http.HandleFunc("/games", GamesHandler)
 	log.Printf("Games service listening on port %d", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
@@ -69,7 +71,7 @@ func registerService() error {
 }
 
 func GamesFormHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "gamesform.html", nil)
+	renderTemplate(w, "submitgameform.html", nil)
 }
 
 func GamesHandlerID(w http.ResponseWriter, r *http.Request) {
