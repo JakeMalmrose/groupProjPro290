@@ -3,39 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vapor - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.7.0"></script>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Vapor</title>
 </head>
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="/login">Login</a></li>
-                <li><a href="/register">Register</a></li>
-                <li><a href="/store">Store</a></li>
-                <li><a href="/library">Library</a></li>
-            </ul>
+    <header class="bg-gray-800 text-white">
+        <!-- Navigation menu -->
+        <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="text-xl font-bold" hx-get="/" hx-target="#content">Vapor</a>
+            <div>
+                <a href="/store" class="px-3 py-2 rounded-md text-sm font-medium" hx-get="/games" hx-target="#content">Store</a>
+                <a href="/library" class="px-3 py-2 rounded-md text-sm font-medium" hx-get="/library" hx-target="#content">Library</a>
+                <a href="/login" class="px-3 py-2 rounded-md text-sm font-medium" hx-get="/login" hx-target="#content">Login</a>
+            </div>
         </nav>
     </header>
 
-    <main>
+    <main class="container mx-auto px-4 py-8">
+        <!-- Main content goes here -->
         <div id="content">
-            {{if .Content}}
-                {{.Content}}
-            {{else}}
-                <h1>Vapor</h1>
-                <p>This is the home page, please login or peep the store page</p>
-            {{end}}
+            <!-- Use HTMX to load and update content -->
+            <div hx-get="/store" hx-trigger="load">
+                <!-- Store page content will be loaded here -->
+            </div>
         </div>
     </main>
 
-    <footer>
-        <p>&copy; 2024 Vapor Games. No rights reserved.</p>
+    <footer class="bg-gray-800 text-white">
+        <!-- Footer content -->
+        <div class="container mx-auto px-4 py-4">
+            <p>&copy; 2024 Vapor. No rights reserved.</p>
+        </div>
     </footer>
-
-    <script>
-        // HTMX event listeners and any additional JavaScript code
-    </script>
 </body>
 </html>
