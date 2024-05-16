@@ -1,0 +1,29 @@
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-4">Store</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {{range .Games}}
+        <div class="bg-white rounded-lg shadow-md">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2">{{.Title}}</h2>
+                <p class="text-gray-600 mb-4">{{.Description}}</p>
+                <div class="mb-4">
+                    <span class="font-bold">Tags:</span>
+                    {{range .Tags}}
+                    <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">{{.}}</span>
+                    {{end}}
+                </div>
+                <div class="mb-4">
+                    <span class="font-bold">Published:</span> {{.Published}}
+                </div>
+                <div class="mb-4">
+                    <span class="font-bold">Author:</span> {{.Author}} ({{.AuthorID}})
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-lg font-bold">${{.Price}}</span>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" hx-post="/cart/add/{{.ID}}">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
