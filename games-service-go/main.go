@@ -140,6 +140,8 @@ func createGame(w http.ResponseWriter, r *http.Request) {
 	log.Println("Description:", createRequest.Description)
 	log.Println("Tags:", createRequest.Tags)
 	log.Println("Price:", createRequest.Price)
+	log.Println("Author:", createRequest.Author)
+	log.Println("AuthorID:", createRequest.AuthorID)
 
 	db.CreateGame(createRequest.GamePostRequestToGame())
 }

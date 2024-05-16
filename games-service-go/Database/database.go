@@ -18,7 +18,10 @@ type Database struct {
 
 func (db *Database) Init() {
 	region := os.Getenv("AWS_REGION")
+	log.Println("Initializing database")
+	log.Println("Region:", region)
 	endpoint := os.Getenv("DYNAMODB_ENDPOINT")
+	log.Println("Endpoint:", endpoint)
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:   aws.String(region),
@@ -35,6 +38,7 @@ func (db *Database) Init() {
 		TableName: aws.String("Games"),
 	})
 	if err != nil {
+		log.Println("Table does not exist, creating it")
 		_, err = db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
 			TableName: aws.
 				String("Games"),
@@ -43,10 +47,19 @@ func (db *Database) Init() {
 					AttributeName: aws.String("ID"),
 					AttributeType: aws.String("S"),
 				},
+				{
+					AttributeName: aws.String("AuthorID"),
+					AttributeType: aws.String("S"),
+				},
 			},
 			KeySchema: []*dynamodb.KeySchemaElement{
 				{
 					AttributeName: aws.String("ID"),
+					KeyType: aws.String("HASH"),
+				},
+				{
+					AttributeName: aws.String("AuthorID"),
+					KeyType: aws.String("RANGE"),
 				},
 			},
 			ProvisionedThroughput: &dynamodb.ProvisionedThroughput{

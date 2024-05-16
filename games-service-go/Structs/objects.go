@@ -39,8 +39,7 @@ func UpdateToDynamoDBItem(updates []Update) []*dynamodb.AttributeValue {
 		updateAttributeValue, err := dynamodbattribute.MarshalMap(update)
 		if err != nil {
 			log.Println("Error marshaling update:", err)
-			return nil
-		}
+			return nil}
 		updatesAttributeValue = append(updatesAttributeValue, &dynamodb.AttributeValue{M: updateAttributeValue})
 	}
 	return updatesAttributeValue
@@ -51,6 +50,8 @@ type GamePostRequest struct {
 	Description string   `json:"Description"`
 	Tags        []string `json:"Tags"`
 	Price       float64  `json:"price"`
+	Author      string   `json:"Author"`
+	AuthorID    string   `json:"AuthorID"`
 }
 
 func (g *GamePostRequest) GamePostRequestToGame() Game {
@@ -76,6 +77,8 @@ type Game struct {
 	Price       float64  `json:"Price"`
 	Updates     []Update `json:"Updates"`
 	Published   string   `json:"Published"`
+	Author      string   `json:"Author"`
+	AuthorID    string   `json:"AuthorID"`
 }
 
 func (g* Game) GameToDynamoDBItem() map[string]*dynamodb.AttributeValue{
@@ -110,6 +113,16 @@ func (g* Game) GameToDynamoDBItem() map[string]*dynamodb.AttributeValue{
 			S: aws.String(g.Published),
 		}
 	}
+	if g.Author != "" {
+		ExpressionAttributeValues[":author"] = &dynamodb.AttributeValue{
+			S: aws.String(g.Author),
+		}
+	}
+	if g.AuthorID != "" {
+		ExpressionAttributeValues[":authorID"] = &dynamodb.AttributeValue{
+			S: aws.String(g.AuthorID),
+		}
+	}
 
 	return ExpressionAttributeValues
 }
@@ -141,6 +154,12 @@ func (g* Game) GameToDynamoDBUpdateItem() map[string]*dynamodb.AttributeValue{
 			L: UpdateToDynamoDBItem(g.Updates),
 		}
 	}
+	if g.Author != "" {
+		ExpressionAttributeValues[":author"] = &dynamodb.AttributeValue{
+			S: aws.String(g.Author),
+		}
+	}
+
 
 	return ExpressionAttributeValues
 }
