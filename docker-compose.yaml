@@ -18,7 +18,7 @@ services:
       - SERVICE_ID=frontend-service-1
       - SERVICE_PORT=3000
       - TRAEFIK_ENABLE=true
-      - TRAEFIK_HTTP_ROUTERS_FRONTEND_RULE=PathPrefix(`/frontend`)
+      - TRAEFIK_HTTP_ROUTERS_FRONTEND_RULE=PathPrefix(`/`)
       - TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000
 
   # PRO290VaporGameAPI:
@@ -33,7 +33,7 @@ services:
     build: ./games-service-go
     container_name: games-service
     ports:
-      - "8080"
+      - "3000"
     environment:
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
@@ -42,10 +42,10 @@ services:
       - CONSUL_ADDRESS=consul:8500
       - SERVICE_NAME=games-service
       - SERVICE_ID=games-service-1
-      - SERVICE_PORT=8080
+      - SERVICE_PORT=3000
       - TRAEFIK_ENABLE=true
       - TRAEFIK_HTTP_ROUTERS_GAMES_RULE=PathPrefix(`/games`)
-      - TRAEFIK_HTTP_SERVICES_GAMES_LOADBALANCER_SERVER_PORT=8080
+      - TRAEFIK_HTTP_SERVICES_GAMES_LOADBALANCER_SERVER_PORT=3000
     depends_on:
       - VaporGameDynamoDB
     networks:
