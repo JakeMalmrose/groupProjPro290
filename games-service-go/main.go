@@ -134,6 +134,13 @@ func createGame(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
+
+	log.Println("Create Game Request:")
+	log.Println("Title:", createRequest.Title)
+	log.Println("Description:", createRequest.Description)
+	log.Println("Tags:", createRequest.Tags)
+	log.Println("Price:", createRequest.Price)
+
 	db.CreateGame(createRequest.GamePostRequestToGame())
 }
 

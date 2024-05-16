@@ -54,7 +54,8 @@ type GamePostRequest struct {
 }
 
 func (g *GamePostRequest) GamePostRequestToGame() Game {
-	return Game{
+
+	game := Game{
 		ID:          uuid.New().String(),
 		Published:   time.Now().Format(time.RFC3339),
 		Title:       g.Title,
@@ -62,6 +63,9 @@ func (g *GamePostRequest) GamePostRequestToGame() Game {
 		Tags:        g.Tags,
 		Price:       g.Price,
 	}
+	log.Println("ID: ", game.ID)
+	log.Println("Published: ", game.Published)
+	return game
 }
 
 type Game struct {
