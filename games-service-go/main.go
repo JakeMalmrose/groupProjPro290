@@ -40,7 +40,7 @@ func main() {
 
 	http.HandleFunc("/", GamesHandler)
 	http.HandleFunc("/{id}", GamesHandlerID)
-	http.HandleFunc("/{gameID}/{updateID}", GameUpdateHandler)
+	//http.HandleFunc("/{gameID}/{updateID}", GameUpdateHandler)
 	log.Printf("Games service listening on port %d", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
@@ -170,70 +170,70 @@ func updateGameID(w http.ResponseWriter, r *http.Request) {
 	db.UpdateGame(id, updateRequest.GamePostRequestToGame())
 }
 
-func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	// get the Game ID from the URL
+// func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
+// 	// get the Game ID from the URL
 
-	switch r.Method {
-	case http.MethodPost:
-		createUpdate(w, r)
-	case http.MethodDelete:
-		deleteUpdate(w, r)
-	case http.MethodPut:
-		updateUpdate(w, r)
-	case http.MethodGet:
-		getUpdate(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
+// 	switch r.Method {
+// 	case http.MethodPost:
+// 		createUpdate(w, r)
+// 	case http.MethodDelete:
+// 		deleteUpdate(w, r)
+// 	case http.MethodPut:
+// 		updateUpdate(w, r)
+// 	case http.MethodGet:
+// 		getUpdate(w, r)
+// 	default:
+// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+// 	}
+// }
 
-func createUpdate(w http.ResponseWriter, r *http.Request) {
-	gameID := r.FormValue("gameID")
-	// Parse the request body
-	var updateRequest structs.UpdatePostObject
-	err := json.NewDecoder(r.Body).Decode(&updateRequest)
-	if err != nil {
-		log.Println("Error decoding request body:", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
-	}
-	db.CreateUpdate(gameID, updateRequest.UpdatePostObjectToUpdate())
-}
+// func createUpdate(w http.ResponseWriter, r *http.Request) {
+// 	gameID := r.FormValue("gameID")
+// 	// Parse the request body
+// 	var updateRequest structs.UpdatePostObject
+// 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
+// 	if err != nil {
+// 		log.Println("Error decoding request body:", err)
+// 		http.Error(w, "Bad Request", http.StatusBadRequest)
+// 		return
+// 	}
+// 	db.CreateUpdate(gameID, updateRequest.UpdatePostObjectToUpdate())
+// }
 
-func deleteUpdate(w http.ResponseWriter, r *http.Request) {
-	gameID := r.FormValue("gameID")
-	updateID := r.FormValue("updateID")
-	db.DeleteUpdate(gameID, updateID)
-}
+// func deleteUpdate(w http.ResponseWriter, r *http.Request) {
+// 	gameID := r.FormValue("gameID")
+// 	updateID := r.FormValue("updateID")
+// 	db.DeleteUpdate(gameID, updateID)
+// }
 
-func updateUpdate(w http.ResponseWriter, r *http.Request) {
-	gameID := r.FormValue("gameID")
-	updateID := r.FormValue("updateID")
-	// Parse the request body
-	var updateRequest structs.UpdatePostObject
-	err := json.NewDecoder(r.Body).Decode(&updateRequest)
-	if err != nil {
-		log.Println("Error decoding request body:", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
-	}
-	db.UpdateUpdate(gameID, updateID, updateRequest)
-}
+// func updateUpdate(w http.ResponseWriter, r *http.Request) {
+// 	gameID := r.FormValue("gameID")
+// 	updateID := r.FormValue("updateID")
+// 	// Parse the request body
+// 	var updateRequest structs.UpdatePostObject
+// 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
+// 	if err != nil {
+// 		log.Println("Error decoding request body:", err)
+// 		http.Error(w, "Bad Request", http.StatusBadRequest)
+// 		return
+// 	}
+// 	db.UpdateUpdate(gameID, updateID, updateRequest)
+// }
 
-func getUpdate(w http.ResponseWriter, r *http.Request) {
-	gameID := r.FormValue("gameID")
-	updateID := r.FormValue("updateID")
-	update, err := db.GetUpdate(gameID, updateID)
-	if err != nil {
-		log.Println("Error getting Update from database:", err)
-		http.Error(w, "Internal Server Error", http.StatusNotFound)
-		return
-	}
-	// todo: Render the template with the retrieved Update data
-	renderTemplate(w, "Update.html", map[string]interface{}{
-		"Update": update,
-	})
-}
+// func getUpdate(w http.ResponseWriter, r *http.Request) {
+// 	gameID := r.FormValue("gameID")
+// 	updateID := r.FormValue("updateID")
+// 	update, err := db.GetUpdate(gameID, updateID)
+// 	if err != nil {
+// 		log.Println("Error getting Update from database:", err)
+// 		http.Error(w, "Internal Server Error", http.StatusNotFound)
+// 		return
+// 	}
+// 	// todo: Render the template with the retrieved Update data
+// 	renderTemplate(w, "Update.html", map[string]interface{}{
+// 		"Update": update,
+// 	})
+// }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
 	t, err := template.ParseFiles("templates/" + templateName)

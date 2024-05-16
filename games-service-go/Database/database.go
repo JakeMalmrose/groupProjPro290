@@ -17,29 +17,31 @@ type Database struct {
 }
 
 func (db *Database) Init() {
-	region := os.Getenv("AWS_REGION")
 	log.Println("Initializing database")
-	log.Println("Region:", region)
 	endpoint := os.Getenv("DYNAMODB_ENDPOINT")
 	log.Println("Endpoint:", endpoint)
 
-	sess, err := session.NewSession(&aws.Config{
-		Region:   aws.String(region),
-		Endpoint: aws.String(endpoint),
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+		Config: aws.Config{
+			Endpoint: aws.String(endpoint),
+		},
+	}))
 
 	db.DynamodbClient = dynamodb.New(sess) //ineffective assignment to field DataBase.DynamodbClient (SA4005)
 
 	// if Games table does not exist, create it maybe
-	_, err = db.DynamodbClient.DescribeTable(&dynamodb.DescribeTableInput{
+	_, err := db.DynamodbClient.DescribeTable(&dynamodb.DescribeTableInput{
 		TableName: aws.String("Games"),
 	})
 	if err != nil {
 		log.Println("Table does not exist, creating it")
-		_, err = db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
+		db.InitializeTables()
+	}
+}
+
+func (db *Database) InitializeTables() error {
+		_, err := db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
 			TableName: aws.
 				String("Games"),
 			AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -47,19 +49,11 @@ func (db *Database) Init() {
 					AttributeName: aws.String("ID"),
 					AttributeType: aws.String("S"),
 				},
-				{
-					AttributeName: aws.String("AuthorID"),
-					AttributeType: aws.String("S"),
-				},
 			},
 			KeySchema: []*dynamodb.KeySchemaElement{
 				{
 					AttributeName: aws.String("ID"),
 					KeyType: aws.String("HASH"),
-				},
-				{
-					AttributeName: aws.String("AuthorID"),
-					KeyType: aws.String("RANGE"),
 				},
 			},
 			ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -70,7 +64,7 @@ func (db *Database) Init() {
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
+	return nil
 }
 
 // ----------------- Games -----------------
@@ -134,13 +128,20 @@ func (db *Database) GetAllGames() ([]structs.Game, error) {
 	return games, nil
 }
 func (db *Database) CreateGame(game structs.Game) error {
-	_, err := db.DynamodbClient.PutItem(&dynamodb.PutItemInput{
-		TableName: aws.String("Games"),
-		Item:      game.GameToDynamoDBItem(),
-	})
+	item, err := dynamodbattribute.MarshalMap(game)
 	if err != nil {
 		return err
 	}
+
+	input := &dynamodb.PutItemInput{
+        TableName: aws.String("Games"),
+        Item:      item,
+    }
+	if err != nil {
+		return err
+	}
+
+	db.DynamodbClient.PutItem(input)
 
 	return nil
 }
@@ -184,61 +185,62 @@ func (db *Database) DeleteAll() error {
 	db.DynamodbClient.DeleteTable(&dynamodb.DeleteTableInput{
 		TableName: aws.String("Games"),
 	})
+	db.InitializeTables()
 	return nil
 }
 
 // ----------------- Updates -----------------
-func (db *Database) CreateUpdate(ID string, update structs.Update) error {
-	currentGame, err := db.GetGame(ID)
-	currentGame.Updates = append(currentGame.Updates, update)
-	if err != nil {
-		return err
-	}
-	db.UpdateGame(ID, *currentGame)
-	return nil
-}
-func (db *Database) DeleteUpdate(ID string, updateID string) error {
-	currentGame, err := db.GetGame(ID)
-	if err != nil {
-		return err
-	}
-	for i, update := range currentGame.Updates {
-		if update.ID == updateID {
-			currentGame.Updates = append(currentGame.Updates[:i], currentGame.Updates[i+1:]...)
-			break
-		}
-	}
-	db.UpdateGame(ID, *currentGame)
-	return nil
-}
-func (db *Database) GetUpdate(ID string, updateID string) (*structs.Update, error) {
-	currentGame, err := db.GetGame(ID)
-	if err != nil {
-		return nil, err
-	}
-	for _, update := range currentGame.Updates {
-		if update.ID == updateID {
-			return &update, nil
-		}
-	}
-	return nil, nil
-}
-func (db *Database) UpdateUpdate(ID string, updateID string, update structs.UpdatePostObject) error {
-	currentGame, err := db.GetGame(ID)
-	if err != nil {
-		return err
-	}
-	for i, update := range currentGame.Updates {
-		if update.ID == updateID {
-			if update.Title != "" {
-				currentGame.Updates[i].Title = update.Title
-			}
-			if update.Content != "" {
-				currentGame.Updates[i].Content = update.Content
-			}
-			break
-		}
-	}
-	db.UpdateGame(ID, *currentGame)
-	return nil
-}
+// func (db *Database) CreateUpdate(ID string, update structs.Update) error {
+// 	currentGame, err := db.GetGame(ID)
+// 	currentGame.Updates = append(currentGame.Updates, update)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	db.UpdateGame(ID, *currentGame)
+// 	return nil
+// }
+// func (db *Database) DeleteUpdate(ID string, updateID string) error {
+// 	currentGame, err := db.GetGame(ID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	for i, update := range currentGame.Updates {
+// 		if update.ID == updateID {
+// 			currentGame.Updates = append(currentGame.Updates[:i], currentGame.Updates[i+1:]...)
+// 			break
+// 		}
+// 	}
+// 	db.UpdateGame(ID, *currentGame)
+// 	return nil
+// }
+// func (db *Database) GetUpdate(ID string, updateID string) (*structs.Update, error) {
+// 	currentGame, err := db.GetGame(ID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	for _, update := range currentGame.Updates {
+// 		if update.ID == updateID {
+// 			return &update, nil
+// 		}
+// 	}
+// 	return nil, nil
+// }
+// func (db *Database) UpdateUpdate(ID string, updateID string, update structs.UpdatePostObject) error {
+// 	currentGame, err := db.GetGame(ID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	for i, update := range currentGame.Updates {
+// 		if update.ID == updateID {
+// 			if update.Title != "" {
+// 				currentGame.Updates[i].Title = update.Title
+// 			}
+// 			if update.Content != "" {
+// 				currentGame.Updates[i].Content = update.Content
+// 			}
+// 			break
+// 		}
+// 	}
+// 	db.UpdateGame(ID, *currentGame)
+// 	return nil
+// }

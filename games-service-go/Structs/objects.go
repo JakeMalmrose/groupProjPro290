@@ -64,6 +64,8 @@ func (g *GamePostRequest) GamePostRequestToGame() Game {
 		Tags:        g.Tags,
 		Price:       g.Price,
 		Updates:    []Update{},
+		Author: 	g.Author,
+		AuthorID: 	g.AuthorID,
 	}
 	log.Println("ID: ", game.ID)
 	log.Println("Published: ", game.Published)
@@ -104,11 +106,11 @@ func (g* Game) GameToDynamoDBItem() map[string]*dynamodb.AttributeValue{
 			N: aws.String(strconv.FormatFloat(g.Price, 'f', -1, 64)),
 		}
 	}
-	if len(g.Updates) != 0 {
-		ExpressionAttributeValues[":updates"] = &dynamodb.AttributeValue{
-			L: UpdateToDynamoDBItem(g.Updates),
-		}
-	}
+	// if len(g.Updates) != 0 {
+	// 	ExpressionAttributeValues[":updates"] = &dynamodb.AttributeValue{
+	// 		L: UpdateToDynamoDBItem(g.Updates),
+	// 	}
+	// }
 	if g.Published != "" {
 		ExpressionAttributeValues[":published"] = &dynamodb.AttributeValue{
 			S: aws.String(g.Published),
@@ -150,11 +152,11 @@ func (g* Game) GameToDynamoDBUpdateItem() map[string]*dynamodb.AttributeValue{
 			N: aws.String(strconv.FormatFloat(g.Price, 'f', -1, 64)),
 		}
 	}
-	if len(g.Updates) != 0 {
-		ExpressionAttributeValues[":updates"] = &dynamodb.AttributeValue{
-			L: UpdateToDynamoDBItem(g.Updates),
-		}
-	}
+	// if len(g.Updates) != 0 {
+	// 	ExpressionAttributeValues[":updates"] = &dynamodb.AttributeValue{
+	// 		L: UpdateToDynamoDBItem(g.Updates),
+	// 	}
+	// }
 	if g.Author != "" {
 		ExpressionAttributeValues[":author"] = &dynamodb.AttributeValue{
 			S: aws.String(g.Author),
@@ -181,9 +183,9 @@ func (g* Game) GameToUpdateString() string{
 	if g.Price != 0 {
 		FinalString += "Price = :price, "
 	}
-	if len(g.Updates) != 0 {
-		FinalString += "Updates = :updates, "
-	}
+	// if len(g.Updates) != 0 {
+	// 	FinalString += "Updates = :updates, "
+	// }
 
 	FinalString = FinalString[:len(FinalString)-2]
 
