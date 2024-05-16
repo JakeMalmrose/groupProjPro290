@@ -1,5 +1,5 @@
 # Use the official Go image as the base image
-FROM golang:1.16
+FROM golang:1.22
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -11,8 +11,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the carts service source code to the working directory
-COPY main.go ./
-COPY templates/ ./templates/
+COPY . .
+
 
 # Build the carts service executable
 RUN go build -o carts-service main.go
