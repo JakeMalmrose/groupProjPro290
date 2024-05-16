@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/hashicorp/consul/api"
 
 	database "github.com/Draupniyr/carts-service/database"
@@ -28,12 +27,44 @@ func init() {
 	if err != nil {
 		log.Fatal("Error creating Consul client:", err)
 	}
-}
 
+}
 func main() {
+	port := 8080
+
+	err := registerService()
+	if err != nil {
+		log.Fatal("Error registering service with Consul:", err)
+	}
+
 	http.HandleFunc("/carts", CartsHandler)
 	http.HandleFunc("/carts/{ID}", CartsHandlerID)
 	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	log.Printf("Carts service listening on port %d", port)
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
+}
+
+func registerService() error {
+	serviceName := os.Getenv("SERVICE_NAME")
+	serviceID := os.Getenv("SERVICE_ID")
+	port, _ := strconv.Atoi(os.Getenv("SERVICE_PORT"))
+
+	tags := []string{
+		"TRAEFIK_ENABLE=true",
+		"traefik.http.routers.cartsservice.rule=PathPrefix(`/carts`)",
+		"TRAEFIK_HTTP_SERVICES_CARTS_LOADBALANCER_SERVER_PORT=3000",
+	}
+
+	service := &api.AgentServiceRegistration{
+		ID:      serviceID,
+		Name:    serviceName,
+		Address: "carts-service",
+		Port:    port,
+		Tags:    tags,
+	}
+
+	return consulClient.Agent().ServiceRegister(service)
 }
 
 func CartsHandlerID(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +129,7 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 func createCart(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
 	var createRequest structs.CreateCartRequest
-	err := json.NewDecoder(r.Body).Decode(&createRequest.Games)
+	err := json.NewDecoder(r.Body).Decode(&createRequest)
 	if err != nil {
 		log.Println("Error decoding request body:", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -115,11 +146,9 @@ func deleteCartID(w http.ResponseWriter, r *http.Request) {
 
 func deleteCart(w http.ResponseWriter, r *http.Request) {
 	// Delete all items from the Carts table
-	_, err := dynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
-		TableName: aws.String("Carts"),
-	})
+	err := db.DeleteAll()
 	if err != nil {
-		log.Println("Error deleting item from Carts table:", err)
+		log.Println("Error deleting items from Carts table:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}

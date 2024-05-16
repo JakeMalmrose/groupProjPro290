@@ -65,6 +65,13 @@ services:
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_REGION=us-west-2
       - DYNAMODB_ENDPOINT=http://VaporCartDynamoDB:8000
+      - CONSUL_ADDRESS=consul:8500
+      - SERVICE_NAME=carts-service
+      - SERVICE_ID=carts-service-1
+      - SERVICE_PORT=8080
+      - TRAEFIK_ENABLE=true
+      - TRAEFIK_HTTP_ROUTERS_CARTS_RULE=PathPrefix(`/carts`)
+      - TRAEFIK_HTTP_SERVICES_CARTS_LOADBALANCER_SERVER_PORT=8080
     depends_on:
       - VaporCartDynamoDB
       - consul
