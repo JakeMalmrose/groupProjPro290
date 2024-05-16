@@ -130,7 +130,7 @@ func (db *Database) AddOrRemoveFromCart(ID string, gamesList []structs.Game) err
 	contains := false
 	for _, game := range cartOG.Games {
 		for _, game2 := range gamesList {
-			if game.GameID == game2.GameID {
+			if game.ID == game2.ID {
 				contains = true
 			}
 		}
@@ -139,7 +139,7 @@ func (db *Database) AddOrRemoveFromCart(ID string, gamesList []structs.Game) err
 		newGamesList := []structs.Game{}
 		for _, game := range cartOG.Games {
 			for _, game2 := range gamesList {
-				if game.GameID != game2.GameID {
+				if game.ID != game2.ID {
 					newGamesList = append(newGamesList, game)
 				}
 			}
@@ -148,7 +148,7 @@ func (db *Database) AddOrRemoveFromCart(ID string, gamesList []structs.Game) err
 	} else {
 		cartOG.Games = append(cartOG.Games, gamesList...)
 	}
-	
+
 	db.CreateAndUpdateCart(*cartOG)
 	return nil
 }

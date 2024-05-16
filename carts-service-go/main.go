@@ -135,7 +135,7 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-
+	log.Println("Create Request: ", createRequest)
 	db.CreateAndUpdateCart(createRequest.CreateCartRequestToCart())
 }
 

@@ -3,17 +3,20 @@ package structs
 import (
 	"github.com/google/uuid"
 )
+type Game struct {
+	ID          string   `json:"ID"`
+	Title       string   `json:"Title"`
+	Description string   `json:"Description"`
+	Tags        []string `json:"Tags"`
+	Price       float64  `json:"Price"`
+	Published   string   `json:"Published"`
+	Author      string   `json:"Author"`
+	AuthorID    string   `json:"AuthorID"`
+}
 
 type Cart struct {
 	ID    string `json:"ID"`
 	Games []Game `json:"Games"`
-}
-
-type Game struct {
-	GameID string  `json:"GameID"`
-	Title  string  `json:"Title"`
-	Price  float64 `json:"Price"`
-	Owned  bool    `json:"Owned"`
 }
 
 type CreateCartRequest struct {

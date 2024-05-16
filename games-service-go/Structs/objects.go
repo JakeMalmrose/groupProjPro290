@@ -167,7 +167,6 @@ func (g* Game) GameToDynamoDBUpdateItem() map[string]*dynamodb.AttributeValue{
 	return ExpressionAttributeValues
 }
 
-
 // Something like: "set Title = :title, Description = :description, Tags = :tags, Price = :price, Updates = :updates, Published = :published"
 func (g* Game) GameToUpdateString() string{
 	FinalString := "set "
