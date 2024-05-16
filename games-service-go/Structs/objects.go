@@ -63,6 +63,7 @@ func (g *GamePostRequest) GamePostRequestToGame() Game {
 		Description: g.Description,
 		Tags:        g.Tags,
 		Price:       g.Price,
+		Updates:    []Update{},
 	}
 	log.Println("ID: ", game.ID)
 	log.Println("Published: ", game.Published)
