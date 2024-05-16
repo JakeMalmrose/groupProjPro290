@@ -166,16 +166,16 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 	// get the cart ID from the URL
 	id := getIDfromURL(r)
 	// Parse the request body = []Game
-	var gamesArray []structs.Game
-	err := json.NewDecoder(r.Body).Decode(&gamesArray)
+	var game structs.Game
+	err := json.NewDecoder(r.Body).Decode(&game)
 	if err != nil {
 		log.Println("Error decoding request body:", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	log.Println("Update Request: ", gamesArray)
+	log.Println("Update Request: ", game.ID)
 
-	db.AddOrRemoveFromCart(id, gamesArray)
+	db.AddOrRemoveFromCart(id, game)
 }
 
 func getIDfromURL(r *http.Request) string {

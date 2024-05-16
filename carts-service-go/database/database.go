@@ -41,34 +41,34 @@ func (db *Database) Init() {
 }
 
 func (db *Database) InitializeTables() error {
-		_, err := db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
-			TableName: aws.
-				String("Carts"),
-			AttributeDefinitions: []*dynamodb.AttributeDefinition{
-				{
-					AttributeName: aws.String("ID"),
-					AttributeType: aws.String("S"),
-				},
+	_, err := db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
+		TableName: aws.
+			String("Carts"),
+		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String("ID"),
+				AttributeType: aws.String("S"),
 			},
-			KeySchema: []*dynamodb.KeySchemaElement{
-				{
-					AttributeName: aws.String("ID"),
-					KeyType: aws.String("HASH"),
-				},
+		},
+		KeySchema: []*dynamodb.KeySchemaElement{
+			{
+				AttributeName: aws.String("ID"),
+				KeyType:       aws.String("HASH"),
 			},
-			ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
-				ReadCapacityUnits:  aws.Int64(5),
-				WriteCapacityUnits: aws.Int64(5),
-			},
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
+		},
+		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(5),
+			WriteCapacityUnits: aws.Int64(5),
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 }
 
 // ----------------- Carts -----------------
-func (db *Database) GetCart(ID string) (*structs.Cart, error) {
+func (db *Database) GetCart(ID string) (structs.Cart, error) {
 	result, err := db.DynamodbClient.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("Carts"),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -78,16 +78,16 @@ func (db *Database) GetCart(ID string) (*structs.Cart, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return structs.Cart{}, err
 	}
 
 	Cart := structs.Cart{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, &Cart)
 	if err != nil {
-		return nil, err
+		return structs.Cart{}, err
 	}
-
-	return &Cart, nil
+	log.Println("Cart From get ID: ", Cart)
+	return Cart, nil
 }
 
 func (db *Database) GetAllCarts() ([]structs.Cart, error) {
@@ -113,43 +113,43 @@ func (db *Database) CreateAndUpdateCart(Cart structs.Cart) error {
 		return err
 	}
 	input := &dynamodb.PutItemInput{
-        TableName: aws.String("Carts"),
-        Item:      item,
-    }
+		TableName: aws.String("Carts"),
+		Item:      item,
+	}
 	db.DynamodbClient.PutItem(input)
 
 	return nil
 }
 
-func (db *Database) AddOrRemoveFromCart(ID string, gamesList []structs.Game) error {
+func (db *Database) AddOrRemoveFromCart(ID string, gameToAddOrRemove structs.Game) error {
 	cartOG, err := db.GetCart(ID)
 	if err != nil {
 		return err
 	}
 
+	newgames := []structs.Game{}
 	contains := false
 	for _, game := range cartOG.Games {
-		for _, game2 := range gamesList {
-			if game.ID == game2.ID {
-				contains = true
-			}
+		log.Println("Checking: ", game.ID, " against: ", gameToAddOrRemove.ID)
+		if game.ID == gameToAddOrRemove.ID {
+			contains = true
+			log.Println("Contains: ", game.ID)
 		}
 	}
 	if contains {
-		newGamesList := []structs.Game{}
 		for _, game := range cartOG.Games {
-			for _, game2 := range gamesList {
-				if game.ID != game2.ID {
-					newGamesList = append(newGamesList, game)
-				}
+			if game.ID != gameToAddOrRemove.ID {
+				newgames = append(newgames, game)
+				log.Println("Adding: ", game.ID)
 			}
 		}
-		cartOG.Games = newGamesList
+		cartOG.Games = newgames
 	} else {
-		cartOG.Games = append(cartOG.Games, gamesList...)
+		cartOG.Games = append(cartOG.Games, gameToAddOrRemove)
+		log.Println("Adding new: ", gameToAddOrRemove.ID)
 	}
 
-	db.CreateAndUpdateCart(*cartOG)
+	db.CreateAndUpdateCart(cartOG)
 	return nil
 }
 
@@ -177,4 +177,3 @@ func (db *Database) DeleteAll() error {
 	db.InitializeTables()
 	return nil
 }
-
