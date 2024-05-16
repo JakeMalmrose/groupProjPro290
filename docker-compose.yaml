@@ -92,12 +92,19 @@ services:
     build: ./auth-service
     container_name: auth-service
     ports:
-      - "8081:8080"
+      - "3000"
     environment:
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_REGION=us-west-2
       - DYNAMODB_ENDPOINT=http://VaporAuthDynamoDB:8000
+      - CONSUL_ADDRESS=consul:8500
+      - SERVICE_NAME=auth-service
+      - SERVICE_ID=auth-service-1
+      - SERVICE_PORT=3000
+      - TRAEFIK_ENABLE=true
+      - TRAEFIK_HTTP_ROUTERS_FRONTEND_RULE=PathPrefix(`/auth`)
+      - TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000
     depends_on:
       - VaporAuthDynamoDB
       - consul
