@@ -75,7 +75,7 @@ func CartsHandlerID(w http.ResponseWriter, r *http.Request) {
 		getCartsID(w, r)
 	case http.MethodDelete:
 		deleteCartID(w, r)
-	case http.MethodPut:
+	case http.MethodPatch:
 		updateCartID(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -130,19 +130,16 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 func createCart(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
 	log.Println("Create Cart Endpoint Hit")
-	var gamesArray structs.Game
-	err := json.NewDecoder(r.Body).Decode(&gamesArray)
+	var cartRequest structs.CreateCartRequest
+	err := json.NewDecoder(r.Body).Decode(&cartRequest)
 	if err != nil {
 		log.Println("Error decoding request body:", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	log.Println("Create Request: ", gamesArray)
+	log.Println("Create Request: ", cartRequest)
 
-	createRequest := structs.CreateCartRequest{
-		Games: []structs.Game{gamesArray},
-	}
-	db.CreateAndUpdateCart(createRequest.CreateCartRequestToCart())
+	db.CreateAndUpdateCart(cartRequest.CreateCartRequestToCart())
 }
 
 func deleteCartID(w http.ResponseWriter, r *http.Request) {

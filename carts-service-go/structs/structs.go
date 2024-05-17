@@ -3,6 +3,7 @@ package structs
 import (
 	"github.com/google/uuid"
 )
+
 type Game struct {
 	ID          string   `json:"ID"`
 	Title       string   `json:"Title"`
@@ -15,17 +16,20 @@ type Game struct {
 }
 
 type Cart struct {
-	ID    string `json:"ID"`
-	Games []Game `json:"Games"`
+	ID     string `json:"ID"`
+	UserID string `json:"UserID"`
+	Games  []Game `json:"Games"`
 }
 
 type CreateCartRequest struct {
-	Games []Game `json:"Games"`
+	UserID string `json:"UserID"`
+	Games  Game   `json:"Game"`
 }
 
 func (c *CreateCartRequest) CreateCartRequestToCart() Cart {
 	return Cart{
-		ID:    uuid.New().String(),
-		Games: c.Games,
+		ID:     uuid.New().String(),
+		UserID: c.UserID,
+		Games:  []Game{c.Games},
 	}
 }
