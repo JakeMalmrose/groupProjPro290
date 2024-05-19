@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/consul/api"
 
@@ -103,7 +104,7 @@ func GamesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGamesID(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("ID")
+	id := getIDfromURL(r)
 	games, err := db.GetGame(id)
 	if err != nil {
 		log.Println("Error getting Game from database:", err)
@@ -117,7 +118,8 @@ func getGamesID(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGames(w http.ResponseWriter, r *http.Request) {
-	search := r.FormValue("Search")
+	// get search string from body
+	search := r.FormValue("search")
 
 	// Filter the Games based on the search string
 	GamesToDisplay, err := db.SearchGames(search)
@@ -155,7 +157,7 @@ func createGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteGameID(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("ID")
+	id := getIDfromURL(r)
 	db.DeleteGame(id)
 }
 
@@ -165,7 +167,7 @@ func deleteAllGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateGameID(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("ID")
+	id := getIDfromURL(r)
 	// Parse the request body
 	var updateRequest structs.GamePostRequest
 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
@@ -178,70 +180,79 @@ func updateGameID(w http.ResponseWriter, r *http.Request) {
 	db.UpdateGame(id, updateRequest.GamePostRequestToGame())
 }
 
-// func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
-// 	// get the Game ID from the URL
+func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	// get the Game ID from the URL
 
-// 	switch r.Method {
-// 	case http.MethodPost:
-// 		createUpdate(w, r)
-// 	case http.MethodDelete:
-// 		deleteUpdate(w, r)
-// 	case http.MethodPut:
-// 		updateUpdate(w, r)
-// 	case http.MethodGet:
-// 		getUpdate(w, r)
-// 	default:
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 	}
-// }
+	switch r.Method {
+	case http.MethodPost:
+		createUpdate(w, r)
+	case http.MethodDelete:
+		deleteUpdate(w, r)
+	case http.MethodPut:
+		updateUpdate(w, r)
+	case http.MethodGet:
+		getUpdate(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
 
-// func createUpdate(w http.ResponseWriter, r *http.Request) {
-// 	gameID := r.FormValue("gameID")
-// 	// Parse the request body
-// 	var updateRequest structs.UpdatePostObject
-// 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
-// 	if err != nil {
-// 		log.Println("Error decoding request body:", err)
-// 		http.Error(w, "Bad Request", http.StatusBadRequest)
-// 		return
-// 	}
-// 	db.CreateUpdate(gameID, updateRequest.UpdatePostObjectToUpdate())
-// }
+func createUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID getIDfromURL(r)
+	// Parse the request body
+	var updateRequest structs.UpdatePostObject
+	err := json.NewDecoder(r.Body).Decode(&updateRequest)
+	if err != nil {
+		log.Println("Error decoding request body:", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	db.CreateUpdate(gameID, updateRequest.UpdatePostObjectToUpdate())
+}
 
-// func deleteUpdate(w http.ResponseWriter, r *http.Request) {
-// 	gameID := r.FormValue("gameID")
-// 	updateID := r.FormValue("updateID")
-// 	db.DeleteUpdate(gameID, updateID)
-// }
+func deleteUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID, updateID := getTwoIDsfromURL(r)
+	db.DeleteUpdate(gameID, updateID)
+}
 
-// func updateUpdate(w http.ResponseWriter, r *http.Request) {
-// 	gameID := r.FormValue("gameID")
-// 	updateID := r.FormValue("updateID")
-// 	// Parse the request body
-// 	var updateRequest structs.UpdatePostObject
-// 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
-// 	if err != nil {
-// 		log.Println("Error decoding request body:", err)
-// 		http.Error(w, "Bad Request", http.StatusBadRequest)
-// 		return
-// 	}
-// 	db.UpdateUpdate(gameID, updateID, updateRequest)
-// }
+func updateUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID, updateID := getTwoIDsfromURL(r)
+	// Parse the request body
+	var updateRequest structs.UpdatePostObject
+	err := json.NewDecoder(r.Body).Decode(&updateRequest)
+	if err != nil {
+		log.Println("Error decoding request body:", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	db.UpdateUpdate(gameID, updateID, updateRequest)
+}
 
-// func getUpdate(w http.ResponseWriter, r *http.Request) {
-// 	gameID := r.FormValue("gameID")
-// 	updateID := r.FormValue("updateID")
-// 	update, err := db.GetUpdate(gameID, updateID)
-// 	if err != nil {
-// 		log.Println("Error getting Update from database:", err)
-// 		http.Error(w, "Internal Server Error", http.StatusNotFound)
-// 		return
-// 	}
-// 	// todo: Render the template with the retrieved Update data
-// 	renderTemplate(w, "Update.html", map[string]interface{}{
-// 		"Update": update,
-// 	})
-// }
+func getUpdate(w http.ResponseWriter, r *http.Request) {
+	gameID, updateID := getTwoIDsfromURL(r)
+	update, err := db.GetUpdate(gameID, updateID)
+	if err != nil {
+		log.Println("Error getting Update from database:", err)
+		http.Error(w, "Internal Server Error", http.StatusNotFound)
+		return
+	}
+	// todo: Render the template with the retrieved Update data
+	renderTemplate(w, "Update.html", map[string]interface{}{
+		"Update": update,
+	})
+}
+
+func getIDfromURL(r *http.Request) string {
+	url := r.URL.Path
+	parts := strings.Split(url, "/")
+	return parts[len(parts)-1]
+}
+
+func getTwoIDsfromURL(r *http.Request) (string, string) {
+	url := r.URL.Path
+	parts := strings.Split(url, "/")
+	return parts[len(parts)-2], parts[len(parts)-1]
+}
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
 	t, err := template.ParseFiles("templates/" + templateName)
