@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/aws/aws-sdk-go v1.52.4
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/consul/api v1.28.2
 )

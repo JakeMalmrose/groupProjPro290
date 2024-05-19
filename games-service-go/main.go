@@ -13,6 +13,7 @@ import (
 
 	database "github.com/Draupniyr/games-service/database"
 	structs "github.com/Draupniyr/games-service/structs"
+	auth "github.com/Draupniyr/games-service/auth"
 )
 
 var db database.Database
@@ -45,6 +46,18 @@ func main() {
 	//http.HandleFunc("/{gameID}/{updateID}", GameUpdateHandler)
 
 	http.HandleFunc("/games", GamesHandler)
+
+	// Developer endpoints
+	http.Handle("/developer/games", auth.Authorize(http.HandlerFunc(getDeveloperGames)))
+	http.Handle("/developer/games/create", auth.Authorize(http.HandlerFunc(createGame)))
+	http.Handle("/developer/games/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameID)))
+	http.Handle("/developer/games/update/{id}", auth.Authorize(http.HandlerFunc(updateGameID)))
+
+	// Admin endpoints
+	http.Handle("/admin/games", auth.Authorize(http.HandlerFunc(getAllGames)))
+	http.Handle("/admin/games/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameID)))
+	http.Handle("/admin/games/approve/{id}", auth.Authorize(http.HandlerFunc(approveGameID)))
+
 	log.Printf("Games service listening on port %d", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
