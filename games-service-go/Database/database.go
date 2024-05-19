@@ -137,9 +137,7 @@ func (db *Database) CreateGame(game structs.Game) error {
         TableName: aws.String("Games"),
         Item:      item,
     }
-	if err != nil {
-		return err
-	}
+
 
 	db.DynamodbClient.PutItem(input)
 
@@ -190,57 +188,57 @@ func (db *Database) DeleteAll() error {
 }
 
 // ----------------- Updates -----------------
-// func (db *Database) CreateUpdate(ID string, update structs.Update) error {
-// 	currentGame, err := db.GetGame(ID)
-// 	currentGame.Updates = append(currentGame.Updates, update)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	db.UpdateGame(ID, *currentGame)
-// 	return nil
-// }
-// func (db *Database) DeleteUpdate(ID string, updateID string) error {
-// 	currentGame, err := db.GetGame(ID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for i, update := range currentGame.Updates {
-// 		if update.ID == updateID {
-// 			currentGame.Updates = append(currentGame.Updates[:i], currentGame.Updates[i+1:]...)
-// 			break
-// 		}
-// 	}
-// 	db.UpdateGame(ID, *currentGame)
-// 	return nil
-// }
-// func (db *Database) GetUpdate(ID string, updateID string) (*structs.Update, error) {
-// 	currentGame, err := db.GetGame(ID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	for _, update := range currentGame.Updates {
-// 		if update.ID == updateID {
-// 			return &update, nil
-// 		}
-// 	}
-// 	return nil, nil
-// }
-// func (db *Database) UpdateUpdate(ID string, updateID string, update structs.UpdatePostObject) error {
-// 	currentGame, err := db.GetGame(ID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for i, update := range currentGame.Updates {
-// 		if update.ID == updateID {
-// 			if update.Title != "" {
-// 				currentGame.Updates[i].Title = update.Title
-// 			}
-// 			if update.Content != "" {
-// 				currentGame.Updates[i].Content = update.Content
-// 			}
-// 			break
-// 		}
-// 	}
-// 	db.UpdateGame(ID, *currentGame)
-// 	return nil
-// }
+func (db *Database) CreateUpdate(ID string, update structs.Update) error {
+	currentGame, err := db.GetGame(ID)
+	currentGame.Updates = append(currentGame.Updates, update)
+	if err != nil {
+		return err
+	}
+	db.UpdateGame(ID, *currentGame)
+	return nil
+}
+func (db *Database) DeleteUpdate(ID string, updateID string) error {
+	currentGame, err := db.GetGame(ID)
+	if err != nil {
+		return err
+	}
+	for i, update := range currentGame.Updates {
+		if update.ID == updateID {
+			currentGame.Updates = append(currentGame.Updates[:i], currentGame.Updates[i+1:]...)
+			break
+		}
+	}
+	db.UpdateGame(ID, *currentGame)
+	return nil
+}
+func (db *Database) GetUpdate(ID string, updateID string) (*structs.Update, error) {
+	currentGame, err := db.GetGame(ID)
+	if err != nil {
+		return nil, err
+	}
+	for _, update := range currentGame.Updates {
+		if update.ID == updateID {
+			return &update, nil
+		}
+	}
+	return nil, nil
+}
+func (db *Database) UpdateUpdate(ID string, updateID string, update structs.UpdatePostObject) error {
+	currentGame, err := db.GetGame(ID)
+	if err != nil {
+		return err
+	}
+	for i, update := range currentGame.Updates {
+		if update.ID == updateID {
+			if update.Title != "" {
+				currentGame.Updates[i].Title = update.Title
+			}
+			if update.Content != "" {
+				currentGame.Updates[i].Content = update.Content
+			}
+			break
+		}
+	}
+	db.UpdateGame(ID, *currentGame)
+	return nil
+}
