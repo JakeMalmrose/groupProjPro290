@@ -211,7 +211,7 @@ func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createUpdate(w http.ResponseWriter, r *http.Request) {
-	gameID getIDfromURL(r)
+	gameID := getIDfromURL(r)
 	// Parse the request body
 	var updateRequest structs.UpdatePostObject
 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
