@@ -27,7 +27,6 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	http.HandleFunc("/", handleIndex) // only file with headers/footers
 
 	http.HandleFunc("/login", handleLogin)
 	http.HandleFunc("/register", handleRegister)
@@ -35,6 +34,9 @@ func main() {
 	http.HandleFunc("/library", handleLibrary)
 	http.HandleFunc("/dev", handleDev)
 	http.HandleFunc("/admin", handleAdmin)
+
+	http.HandleFunc("/", handleIndex) // only file with headers/footers
+
 
 	err := registerService()
 	if err != nil {
@@ -57,13 +59,7 @@ func handleDev(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		renderTemplate(w, "index.html", map[string]interface{}{
-			"Content": template.HTML(getContentHTML("login.html")),
-		})
-	} else {
-		
-	}
+	renderTemplate(w, "login.html", nil)
 }
 
 func handleRegister(w http.ResponseWriter, r *http.Request) {
