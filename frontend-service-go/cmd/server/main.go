@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"html/template"
 	"log"
 	"net/http"
@@ -63,34 +62,15 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRegister(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "index.html", map[string]interface{}{
-		"Content": template.HTML(getContentHTML("register.html")),
-	})
+	renderTemplate(w, "register.html", nil)
 }
 
 func handleStore(w http.ResponseWriter, r *http.Request) {
-	
+	renderTemplate(w, "store.html", nil)
 }
 
 func handleLibrary(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "index.html", map[string]interface{}{
-		"Content": template.HTML(getContentHTML("library.html")),
-	})
-}
-
-func getContentHTML(tmpl string) string {
-	t, err := template.ParseFiles("templates/" + tmpl)
-	if err != nil {
-		return ""
-	}
-
-	var contentBuf bytes.Buffer
-	err = t.Execute(&contentBuf, nil)
-	if err != nil {
-		return ""
-	}
-
-	return contentBuf.String()
+	renderTemplate(w, "library.html", nil)
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {

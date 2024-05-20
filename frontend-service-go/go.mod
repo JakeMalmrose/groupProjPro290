@@ -2,7 +2,10 @@ module github.com/Draupniyr/groupProjPro290
 
 go 1.21
 
-require github.com/hashicorp/consul/api v1.28.2
+require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/hashicorp/consul/api v1.28.2
+)
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
