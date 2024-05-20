@@ -13,6 +13,7 @@ import (
 
 	database "github.com/Draupniyr/carts-service/database"
 	structs "github.com/Draupniyr/carts-service/structs"
+	kafka "github.com/Draupniyr/carts-service/kafka"
 )
 
 var db database.Database
@@ -40,6 +41,7 @@ func main() {
 
 	http.HandleFunc("/carts", CartsHandler)
 	http.HandleFunc("/carts/{ID}", CartsHandlerID)
+	http.HandleFunc("/carts/checkout/{ID}", checkout)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 	log.Printf("Carts service listening on port %d", port)
@@ -179,6 +181,37 @@ func getIDfromURL(r *http.Request) string {
 	url := r.URL.Path
 	parts := strings.Split(url, "/")
 	return parts[len(parts)-1]
+}
+
+func checkout(w http.ResponseWriter, r *http.Request) {
+	//get ID from URL
+	id := getIDfromURL(r)
+	// Query the Carts table for the cart with the specified ID
+	game, err := db.GetCart(id)
+	if err != nil {
+		log.Println("Error getting item from Carts table:", err)
+		http.Error(w, "Cart not found", http.StatusNotFound)
+		return
+	}
+
+	// turn game item into json
+	gameJson, err := json.Marshal(game)
+	if err != nil {
+		log.Println("Error marshalling game item:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	// turn gamejson into a byte array
+	gameByte := []byte(gameJson)
+	
+	kafka.PushCommentToQueue("checkout", []byte(gameByte))
+	db.DeleteCart(id)
+
+	// TODO: render Order complete page
+	// renderTemplate(w, "checkout.html", map[string]interface{}{
+	// 	"Carts": []structs.Cart{cart},
+	// })
+
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
