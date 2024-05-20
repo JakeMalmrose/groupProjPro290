@@ -28,8 +28,8 @@ var jwtSecret = []byte("zachariah-hansen")
 var consulClient *api.Client
 
 func main() {
-    http.HandleFunc("/login", loginHandler)
-	http.HandleFunc("/register", registerHandler)
+    http.HandleFunc("/auth/login", loginHandler)
+	http.HandleFunc("/auth/register", registerHandler)
 
 
     err := registerService()

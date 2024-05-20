@@ -115,7 +115,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=PathPrefix(`/auth`)"
-      - "traefik.http.services.auth.loadbalancer.server.port=8080"
+      - "traefik.http.services.auth.loadbalancer.server.port=3000"
 
 
 
