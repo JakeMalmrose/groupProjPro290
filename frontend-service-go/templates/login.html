@@ -32,6 +32,12 @@
             var responseText = evt.detail.xhr.responseText;
             var response = JSON.parse(responseText);
             var token = response.token;
+            if(!token) {
+                authMessage.textContent = 'User registered, please login.';
+                authMessage.classList.remove('text-red-500');
+                authMessage.classList.add('text-green-500');
+                return;
+            }
             localStorage.setItem('token', token);
             
             authMessage.textContent = action + ' successful. Redirecting...';
