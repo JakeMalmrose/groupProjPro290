@@ -149,24 +149,30 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 }
 
 func createGame(w http.ResponseWriter, r *http.Request) {
-	// Parse the request body
-	var createRequest structs.GamePostRequest
-	err := json.NewDecoder(r.Body).Decode(&createRequest)
-	if err != nil {
-		log.Println("Error decoding request body:", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
-	}
+    // Get the developer's ID from the request context
+    developerID := r.Context().Value("userID").(string)
 
-	log.Println("Create Game Request:")
-	log.Println("Title:", createRequest.Title)
-	log.Println("Description:", createRequest.Description)
-	log.Println("Tags:", createRequest.Tags)
-	log.Println("Price:", createRequest.Price)
-	log.Println("Author:", createRequest.Author)
-	log.Println("AuthorID:", createRequest.AuthorID)
+    // Parse the request body
+    var createRequest structs.GamePostRequest
+    err := json.NewDecoder(r.Body).Decode(&createRequest)
+    if err != nil {
+        log.Println("Error decoding request body:", err)
+        http.Error(w, "Bad Request", http.StatusBadRequest)
+        return
+    }
 
-	db.CreateGame(createRequest.GamePostRequestToGame())
+    log.Println("Create Game Request:")
+    log.Println("Title:", createRequest.Title)
+    log.Println("Description:", createRequest.Description)
+    log.Println("Tags:", createRequest.Tags)
+    log.Println("Price:", createRequest.Price)
+    log.Println("Author:", createRequest.Author)
+    log.Println("AuthorID:", createRequest.AuthorID)
+
+    // Set the developer ID in the create request
+    createRequest.AuthorID = developerID
+
+    db.CreateGame(createRequest.GamePostRequestToGame())
 }
 
 func deleteGameID(w http.ResponseWriter, r *http.Request) {
