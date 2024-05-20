@@ -6,8 +6,6 @@ import (
 	"github.com/IBM/sarama"
 )
 
-kafka = ConnectProducer([]string{"kafka:9092"})
-
 func ConnectProducer(brokersUrl []string) (sarama.SyncProducer, error) {
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
