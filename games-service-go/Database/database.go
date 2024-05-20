@@ -145,22 +145,18 @@ func (db *Database) CreateGame(game structs.Game) error {
 }
 func (db *Database) UpdateGame(ID string, game structs.Game) error {
 	game.ID = ID
-	game.Published = ""
-	updateString := game.GameToUpdateString()
-	_, err := db.DynamodbClient.UpdateItem(&dynamodb.UpdateItemInput{
-		TableName: aws.String("Games"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"ID": {
-				S: aws.String(ID),
-			},
-		},
-		UpdateExpression:          &updateString,
-		ExpressionAttributeValues: game.GameToDynamoDBUpdateItem(),
-		ReturnValues:              aws.String("UPDATED_NEW"),
-	})
+	item, err := dynamodbattribute.MarshalMap(game)
 	if err != nil {
 		return err
 	}
+
+	input := &dynamodb.PutItemInput{
+        TableName: aws.String("Games"),
+        Item:      item,
+    }
+
+
+	db.DynamodbClient.PutItem(input)
 
 	return nil
 }
