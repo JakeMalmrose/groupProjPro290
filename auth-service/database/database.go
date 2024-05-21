@@ -36,6 +36,11 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+    err = addDefaultAdmin()
+    if err != nil {
+        panic(err)
+    }
+
 }
 
 func AuthenticateUser(username, password string) (*User, error) {
@@ -171,41 +176,44 @@ func InitializeTables() error {
 			return err
 		}
 	}
-    addDefaultAdmin()
+    
 	return nil
 }
 
 func addDefaultAdmin() error {
-	// Check if the default admin user exists
-	_, err := db.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String("users"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"username": {
-				S: aws.String("admin"),
-			},
-		},
-	})
+    // Check if the default admin user exists
+    thing, err := db.GetItem(&dynamodb.GetItemInput{
+        TableName: aws.String("users"),
+        Key: map[string]*dynamodb.AttributeValue{
+            "username": {
+                S: aws.String("admin"),
+            },
+        },
+    })
 
-	if err != nil {
-		// If the user doesn't exist, create it
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == dynamodb.ErrCodeResourceNotFoundException {
-			user := User{
-				Username: "gorf",
-				Password: "admin",
-				Audience: "admin",
-			}
+    if len(thing.Item) == 0{
+        // If the user doesn't exist, create it
+            user := User{
+                Username: "admin",
+                Password: "admin",
+                Audience: "admin",
+                ID: "idk lol",
+            }
 
-			err = SaveUser(user)
-			if err != nil {
-				return err
-			}
+            err = SaveUser(user)
+            if err != nil {
+                fmt.Printf("Error creating default admin user: %v\n", err)
+                return err
+            }
 
-		} else {
-			return err
-		}
-	}
+            fmt.Println("Default admin user created successfully")
+    } else {
+        fmt.Println("Default admin user already exists")
+        fmt.Println(err)
+        fmt.Println(thing)
+    }
 
-	return nil
+    return nil
 }
 
 func createUsersTable() error {
