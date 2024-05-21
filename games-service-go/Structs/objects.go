@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/google/uuid"
+	"encoding/json"
 )
 
 type UpdatePostObject struct {
@@ -70,6 +71,26 @@ func (g *GamePostRequest) GamePostRequestToGame() Game {
 	log.Println("ID: ", game.ID)
 	log.Println("Published: ", game.Published)
 	return game
+}
+
+//custom unmarshaler for price
+func (r *GamePostRequest) UnmarshalJSON(data []byte) error {
+    type Alias GamePostRequest
+    aux := &struct {
+        Price json.Number `json:"price"`
+        *Alias
+    }{
+        Alias: (*Alias)(r),
+    }
+    if err := json.Unmarshal(data, &aux); err != nil {
+        return err
+    }
+    price, err := aux.Price.Float64()
+    if err != nil {
+        return err
+    }
+    r.Price = price
+    return nil
 }
 
 type Game struct {
