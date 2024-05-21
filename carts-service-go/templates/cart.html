@@ -1,6 +1,7 @@
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-4">Shopping Cart</h1>
-    {{if .Cart.Games}}
+    <h1 class="text-3xl font-bold mb-4">Cart</h1>
+    {{range $.Cart}}
+    {{if .Games}}
     <div class="bg-white rounded-lg shadow-md">
         <div class="p-4">
             <table class="w-full">
@@ -12,24 +13,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{range .Cart.Games}}
+                    {{range .Games}}
                     <tr>
-                        <td class="border px-4 py-2">{{.Title}}</td>
-                        <td class="border px-4 py-2">${{.Price}}</td>
-                        <td class="border px-4 py-2">
-                            <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" hx-delete="/carts/{{$.Cart.ID}}/games/{{.ID}}">Remove</button>
+                        <td class="px-4 py-2">{{.Title}}</td>
+                        <td class="px-4 py-2">${{.Price}}</td>
+                        <td class="px-4 py-2">
+                            <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" hx-delete="/carts/{{$.ID}}/games/{{.ID}}">Remove</button>
                         </td>
                     </tr>
                     {{end}}
                 </tbody>
             </table>
-            <div class="mt-4 flex justify-between">
-                <span class="text-lg font-bold">Total: ${{.Cart.Total}}</span>
+            <div class="mt-4 flex justify-end">
                 <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Checkout</button>
             </div>
         </div>
     </div>
     {{else}}
     <p class="text-gray-600">Your cart is empty.</p>
+    {{end}}
     {{end}}
 </div>
