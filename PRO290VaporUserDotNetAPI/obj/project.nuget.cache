@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KV2DU8U2BN0kzw+P8P2VNj3dd2gahPfZV8rw6/wdY2i1vY/zcZlqVardse/eNZeNdPsmBW+DBqHr4j2vFCockA==",
+  "dgSpecHash": "25Pq5bL6ZPBVaw6r5LEbMpUVk4I984rHNnz1UDBVYZ8FaNA9LkxdIpTZkETCUwQekhUwDH/Dfi6AX5eCxY6TNQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Service-Based Software Architecture\\groupProjPro290\\Pro290VaporUserDotNetAPI\\Pro290VaporUserDotNetAPI.csproj",
+  "projectFilePath": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Proj\\groupProjPro290\\Pro290VaporUserDotNetAPI\\Pro290VaporUserDotNetAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\spyro\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

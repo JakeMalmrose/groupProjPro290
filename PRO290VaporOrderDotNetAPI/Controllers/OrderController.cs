@@ -34,7 +34,13 @@ public class OrderController : ControllerBase
     {
         return Ok("hello from OrderController");
     }
- 
+     // GET: api/Order
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<OrderDTO>>> GetOrders()
+    {
+        var orders = await _context.Orders.Include(o => o.OrderGames).ToListAsync();
+        return _mapper.Map<List<OrderDTO>>(orders);
+    }
     [HttpGet]
     [Route("GetMyIP")]
     public async Task<ActionResult<String>> GetMyIP()

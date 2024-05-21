@@ -4262,11 +4262,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Service-Based Software Architecture\\groupProjPro290\\Pro290VaporUserDotNetAPI\\Pro290VaporUserDotNetAPI.csproj",
+      "projectUniqueName": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Proj\\groupProjPro290\\Pro290VaporUserDotNetAPI\\Pro290VaporUserDotNetAPI.csproj",
       "projectName": "Pro290VaporUserDotNetAPI",
-      "projectPath": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Service-Based Software Architecture\\groupProjPro290\\Pro290VaporUserDotNetAPI\\Pro290VaporUserDotNetAPI.csproj",
+      "projectPath": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Proj\\groupProjPro290\\Pro290VaporUserDotNetAPI\\Pro290VaporUserDotNetAPI.csproj",
       "packagesPath": "C:\\Users\\spyro\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Service-Based Software Architecture\\groupProjPro290\\Pro290VaporUserDotNetAPI\\obj\\",
+      "outputPath": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Proj\\groupProjPro290\\Pro290VaporUserDotNetAPI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
