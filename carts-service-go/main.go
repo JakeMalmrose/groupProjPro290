@@ -145,7 +145,7 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 	}
 	cartRequest := structs.CreateCartRequest{
 		UserID: r.Context().Value("userID").(string),
-		Games:  &game,
+		Game:  &game,
 	}
 	log.Println("Create Request: ", cartRequest)
 

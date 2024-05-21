@@ -23,13 +23,13 @@ type Cart struct {
 
 type CreateCartRequest struct {
 	UserID string `json:"UserID"`
-	Games  *Game   `json:"Game"`
+	Game  *Game   `json:"Game"`
 }
 
 func (c *CreateCartRequest) CreateCartRequestToCart() Cart {
 	return Cart{
 		ID:     uuid.New().String(),
 		UserID: c.UserID,
-		Games:  []Game{*c.Games},
+		Games:  []Game{*c.Game},
 	}
 }
