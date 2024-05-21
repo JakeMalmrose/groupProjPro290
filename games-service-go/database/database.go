@@ -41,29 +41,29 @@ func (db *Database) Init() {
 }
 
 func (db *Database) InitializeTables() error {
-		_, err := db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
-			TableName: aws.
-				String("Games"),
-			AttributeDefinitions: []*dynamodb.AttributeDefinition{
-				{
-					AttributeName: aws.String("ID"),
-					AttributeType: aws.String("S"),
-				},
+	_, err := db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
+		TableName: aws.
+			String("Games"),
+		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String("ID"),
+				AttributeType: aws.String("S"),
 			},
-			KeySchema: []*dynamodb.KeySchemaElement{
-				{
-					AttributeName: aws.String("ID"),
-					KeyType: aws.String("HASH"),
-				},
+		},
+		KeySchema: []*dynamodb.KeySchemaElement{
+			{
+				AttributeName: aws.String("ID"),
+				KeyType:       aws.String("HASH"),
 			},
-			ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
-				ReadCapacityUnits:  aws.Int64(5),
-				WriteCapacityUnits: aws.Int64(5),
-			},
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
+		},
+		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(5),
+			WriteCapacityUnits: aws.Int64(5),
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 }
 
@@ -90,12 +90,39 @@ func (db *Database) GetGame(ID string) (*structs.Game, error) {
 	return &game, nil
 }
 func (db *Database) SearchGames(search string) ([]structs.Game, error) {
+	// case sencitive search ;-;
 	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
 		TableName:        aws.String("Games"),
 		FilterExpression: aws.String("contains(Title, :search) OR contains(Description, :search) OR contains(Tags, :search)"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":search": {
 				S: aws.String(search),
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+
+	
+
+	games := []structs.Game{}
+	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &games)
+	if err != nil {
+		return nil, err
+	}
+
+	return games, nil
+}
+
+func (db *Database) GetGamesByAuthor(authorID string) ([]structs.Game, error) {
+	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
+		TableName:        aws.String("Games"),
+		FilterExpression: aws.String("AuthorID = :authorID"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":authorID": {
+				S: aws.String(authorID),
 			},
 		},
 	})
@@ -111,6 +138,7 @@ func (db *Database) SearchGames(search string) ([]structs.Game, error) {
 
 	return games, nil
 }
+
 func (db *Database) GetAllGames() ([]structs.Game, error) {
 	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
 		TableName: aws.String("Games"),
@@ -134,10 +162,9 @@ func (db *Database) CreateGame(game structs.Game) error {
 	}
 
 	input := &dynamodb.PutItemInput{
-        TableName: aws.String("Games"),
-        Item:      item,
-    }
-
+		TableName: aws.String("Games"),
+		Item:      item,
+	}
 
 	db.DynamodbClient.PutItem(input)
 
@@ -151,10 +178,9 @@ func (db *Database) UpdateGame(ID string, game structs.Game) error {
 	}
 
 	input := &dynamodb.PutItemInput{
-        TableName: aws.String("Games"),
-        Item:      item,
-    }
-
+		TableName: aws.String("Games"),
+		Item:      item,
+	}
 
 	db.DynamodbClient.PutItem(input)
 

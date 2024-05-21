@@ -43,6 +43,9 @@ func main() {
 
 	http.HandleFunc("/games/getform", GamesFormHandler)
 	http.HandleFunc("/games/{id}", GamesHandlerID)
+	http.HandleFunc("/games/search/{search}", getGamesBySearch)
+	http.HandleFunc("/games/author/{id}", getGamesByAuthor)
+
 	//http.HandleFunc("/{gameID}/{updateID}", GameUpdateHandler)
 
 	http.HandleFunc("/games", GamesHandler)
@@ -147,6 +150,41 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 		"Games": GamesToDisplay,
 	})
 }
+
+func getGamesByAuthor(w http.ResponseWriter, r *http.Request) {
+	// Get the author ID from the URL
+	authorID := getIDfromURL(r)
+
+	// Get the Games by the author
+	GamesToDisplay, err := db.GetGamesByAuthor(authorID)
+	if err != nil {
+		log.Println("Error getting Game from database:", err)
+		http.Error(w, "Internal Server Error", http.StatusNotFound)
+		return
+	}
+
+	renderTemplate(w, "gameslist.html", map[string]interface{}{
+		"Games": GamesToDisplay,
+	})
+}
+
+func getGamesBySearch(w http.ResponseWriter, r *http.Request) {
+	// Get the search string from the URL
+	search := getIDfromURL(r)
+
+	// Get the Games by the search string
+	GamesToDisplay, err := db.SearchGames(search)
+	if err != nil {
+		log.Println("Error getting Game from database:", err)
+		http.Error(w, "Internal Server Error", http.StatusNotFound)
+		return
+	}
+
+	renderTemplate(w, "gameslist.html", map[string]interface{}{
+		"Games": GamesToDisplay,
+	})
+}
+
 
 func createGame(w http.ResponseWriter, r *http.Request) {
     // Get the developer's ID from the request context

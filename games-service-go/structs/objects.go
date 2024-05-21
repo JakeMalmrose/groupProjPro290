@@ -3,14 +3,16 @@ package structs
 import (
 	"log"
 	"strconv"
+	"strings"
 
 	"time"
+
+	"encoding/json"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/google/uuid"
-	"encoding/json"
 )
 
 type UpdatePostObject struct {
@@ -19,11 +21,13 @@ type UpdatePostObject struct {
 }
 
 func (u *UpdatePostObject) UpdatePostObjectToUpdate() Update {
+	time := time.Now().Format(time.RFC3339)
+	time = strings.Split(time, "T")[0]
 	return Update{
 		ID:      uuid.New().String(),
 		Title:   u.Title,
 		Content: u.Content,
-		Date:    time.Now().Format(time.RFC3339),
+		Date:    time,
 	}
 }
 
@@ -56,10 +60,12 @@ type GamePostRequest struct {
 }
 
 func (g *GamePostRequest) GamePostRequestToGame() Game {
-
+	time := time.Now().Format(time.RFC3339)
+	time = strings.Split(time, "T")[0]
+	
 	game := Game{
 		ID:          uuid.New().String(),
-		Published:   time.Now().Format(time.RFC3339),
+		Published:   time,
 		Title:       g.Title,
 		Description: g.Description,
 		Tags:        g.Tags,
