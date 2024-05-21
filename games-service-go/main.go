@@ -150,7 +150,19 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 
 func createGame(w http.ResponseWriter, r *http.Request) {
     // Get the developer's ID from the request context
-    developerID := r.Context().Value("UserID").(string)
+    userIDValue := r.Context().Value("userID")
+    if userIDValue == nil {
+        log.Println("User ID not found in the request context")
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
+    }
+
+    developerID, ok := userIDValue.(string)
+    if !ok {
+        log.Println("User ID is not of type string")
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
+    }
 
     // Parse the request body
     var createRequest structs.GamePostRequest
