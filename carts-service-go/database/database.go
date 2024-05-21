@@ -3,6 +3,7 @@ package database
 import (
 	"log"
 	"os"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -49,19 +50,11 @@ func (db *Database) InitializeTables() error {
 				AttributeName: aws.String("ID"),
 				AttributeType: aws.String("S"),
 			},
-			{
-				AttributeName: aws.String("UserID"),
-				AttributeType: aws.String("S"),
-			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
 				AttributeName: aws.String("ID"),
 				KeyType:       aws.String("HASH"),
-			},
-			{
-				AttributeName: aws.String("UserID"),
-				KeyType:       aws.String("RANGE"),
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -76,26 +69,44 @@ func (db *Database) InitializeTables() error {
 }
 
 // ----------------- Carts -----------------
-func (db *Database) GetCart(ID string) (structs.Cart, error) {
-	result, err := db.DynamodbClient.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String("Carts"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"UserID": {
-				S: aws.String(ID),
-			},
-		},
-	})
-	if err != nil {
-		return structs.Cart{}, err
-	}
+func (db *Database) GetCart(userID string) (structs.Cart, error) {
+    if userID == "" {
+        return structs.Cart{}, fmt.Errorf("userID is required")
+    }
 
-	Cart := structs.Cart{}
-	err = dynamodbattribute.UnmarshalMap(result.Item, &Cart)
-	if err != nil {
-		return structs.Cart{}, err
-	}
-	log.Println("Cart From get ID: ", Cart)
-	return Cart, nil
+    result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
+        TableName:        aws.String("Carts"),
+        FilterExpression: aws.String("UserID = :userID"),
+        ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+            ":userID": {
+                S: aws.String(userID),
+            },
+        },
+    })
+    if err != nil {
+        log.Printf("Error scanning Carts table: %v", err)
+        return structs.Cart{}, err
+    }
+
+    if len(result.Items) == 0 {
+        log.Printf("Cart not found for UserID: %s", userID)
+        return structs.Cart{}, fmt.Errorf("cart not found for UserID: %s", userID)
+    }
+
+    if len(result.Items) > 1 {
+        log.Printf("Multiple carts found for UserID: %s", userID)
+        return structs.Cart{}, fmt.Errorf("multiple carts found for UserID: %s", userID)
+    }
+
+    var cart structs.Cart
+    err = dynamodbattribute.UnmarshalMap(result.Items[0], &cart)
+    if err != nil {
+        log.Printf("Error unmarshaling cart: %v", err)
+        return structs.Cart{}, err
+    }
+
+    log.Printf("Retrieved cart for UserID: %s, Cart: %+v", userID, cart)
+    return cart, nil
 }
 
 func (db *Database) GetAllCarts() ([]structs.Cart, error) {
@@ -161,13 +172,18 @@ func (db *Database) AddOrRemoveFromCart(ID string, gameToAddOrRemove structs.Gam
 	return nil
 }
 
-func (db *Database) DeleteCart(ID string) error {
+func (db *Database) DeleteCart(UserID string) error {
 
-	_, err := db.DynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
+	cart, err := db.GetCart(UserID)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.DynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
 		TableName: aws.String("Carts"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"UserID": {
-				S: aws.String(ID),
+			"ID": {
+				S: aws.String(cart.ID),
 			},
 		},
 	})
