@@ -105,10 +105,11 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("userID").(string)
 	// Query the Carts table for the cart with the specified ID
 	cart, err := db.GetCart(id)
+
 	if err != nil {
 		cart := structs.CreateCartRequest{
 			UserID: id,
-			Games:  nil,
+			Game:  nil,
 			}
 		db.CreateAndUpdateCart(cart.CreateCartRequestToCart())
 	}
@@ -145,7 +146,7 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 	}
 	cartRequest := structs.CreateCartRequest{
 		UserID: r.Context().Value("userID").(string),
-		Games:  &game,
+		Game:  &game,
 	}
 	log.Println("Create Request: ", cartRequest)
 

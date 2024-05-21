@@ -49,11 +49,19 @@ func (db *Database) InitializeTables() error {
 				AttributeName: aws.String("ID"),
 				AttributeType: aws.String("S"),
 			},
+			{
+				AttributeName: aws.String("UserID"),
+				AttributeType: aws.String("S"),
+			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
 				AttributeName: aws.String("ID"),
 				KeyType:       aws.String("HASH"),
+			},
+			{
+				AttributeName: aws.String("UserID"),
+				KeyType:       aws.String("RANGE"),
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
