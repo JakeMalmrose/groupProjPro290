@@ -105,6 +105,7 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
 
     cart, err := db.GetCart(id)
     if err != nil {
+		log.Println("Error getting item from Carts table:", err)
         cart = structs.Cart{
             ID:     uuid.New().String(),
             UserID: id,
@@ -114,7 +115,7 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
     }
 
     renderTemplate(w, "cart.html", map[string]interface{}{
-        "Carts": []structs.Cart{cart},
+        "Cart": []structs.Cart{cart},
     })
 }
 
