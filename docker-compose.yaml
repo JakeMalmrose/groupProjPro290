@@ -12,6 +12,8 @@ services:
       - VaporNet
     depends_on:
       - traefik
+    restart:
+      always
     environment:
       - CONSUL_ADDRESS=consul:8500
       - SERVICE_NAME=frontend-service
@@ -115,7 +117,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=PathPrefix(`/auth`)"
-      - "traefik.http.services.auth.loadbalancer.server.port=8080"
+      - "traefik.http.services.auth.loadbalancer.server.port=3000"
 
 
 

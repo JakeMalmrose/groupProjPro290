@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.7.0"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js"></script>
     <title>Vapor</title>
 </head>
 <body class="flex flex-col h-screen justify-between">
@@ -25,9 +26,7 @@
     <main class="container mx-auto px-4 py-8">
         <!-- Main content goes here -->
         <div id="content">
-            <!-- Use HTMX to load and update content -->
             <div hx-get="/store" hx-trigger="load">
-                <!-- Store page content will be loaded here -->
             </div>
         </div>
     </main>
@@ -37,6 +36,14 @@
         <div class="container mx-auto px-4 py-4">
             <p>&copy; 2024 Vapor. No rights reserved.</p>
         </div>
+        <script>
+            document.addEventListener('htmx:configRequest', function(evt) {
+                var token = localStorage.getItem('token');
+                if (token) {
+                    evt.detail.headers['Authorization'] = 'Bearer ' + token;
+                }
+            });
+        </script>
     </footer>
 </body>
 </html>

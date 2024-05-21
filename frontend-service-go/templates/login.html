@@ -1,36 +1,45 @@
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 class="text-2xl font-bold mb-6 text-center">Login / Register</h1>
-        <div id="auth-form">
+        <form id="auth-form">
             <div class="mb-4">
-                <label for="email" class="block text-gray-700 font-bold mb-2">Email</label>
-                <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" required>
+                <label for="username" class="block text-gray-700 font-bold mb-2">Username</label>
+                <input type="text" id="username" name="username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" required>
             </div>
             <div class="mb-6">
                 <label for="password" class="block text-gray-700 font-bold mb-2">Password</label>
                 <input type="password" id="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" required>
             </div>
             <div class="flex items-center justify-between">
-                <button id="login-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" hx-post="/auth/login">Login</button>
-                <button id="register-btn" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600" hx-post="/auth/register">Register</button>
+                <button type="button" id="login-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" hx-post="/auth/login" hx-include="#auth-form" hx-ext="json-enc" hx-target="#auth-message">Login</button>
+                <button type="button" id="register-btn" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600" hx-post="/auth/register" hx-include="#auth-form" hx-ext="json-enc" hx-target="#auth-message">Register</button>
             </div>
-        </div>
+        </form>
         <div id="auth-message" class="mt-4"></div>
     </div>
 </div>
 
 <script>
     document.body.addEventListener('htmx:afterRequest', function(evt) {
-        if (evt.detail.target === document.getElementById('login-btn')) {
+        if (evt.detail.target === document.getElementById('auth-message')) {
             handleAuthResponse(evt, 'Login');
-        } else if (evt.detail.target === document.getElementById('register-btn')) {
-            handleAuthResponse(evt, 'Registration');
         }
     });
 
     function handleAuthResponse(evt, action) {
         var authMessage = document.getElementById('auth-message');
-        if (evt.detail.succeeded) {
+        if (evt.detail.xhr.status >= 200 && evt.detail.xhr.status < 300) {
+            var responseText = evt.detail.xhr.responseText;
+            var response = JSON.parse(responseText);
+            var token = response.token;
+            if(!token) {
+                authMessage.textContent = 'User registered, please login.';
+                authMessage.classList.remove('text-red-500');
+                authMessage.classList.add('text-green-500');
+                return;
+            }
+            localStorage.setItem('token', token);
+            
             authMessage.textContent = action + ' successful. Redirecting...';
             authMessage.classList.remove('text-red-500');
             authMessage.classList.add('text-green-500');
