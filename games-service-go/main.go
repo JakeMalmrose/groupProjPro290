@@ -49,9 +49,9 @@ func main() {
 
 	// Developer endpoints
 	//http.Handle("/developer/games", auth.Authorize(http.HandlerFunc(getDeveloperGames)))
-	http.Handle("/developer/games/create", auth.Authorize(http.HandlerFunc(createGame)))
-	http.Handle("/developer/games/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameID)))
-	http.Handle("/developer/games/update/{id}", auth.Authorize(http.HandlerFunc(updateGameID)))
+	http.Handle("/games/dev/create", auth.Authorize(http.HandlerFunc(createGame)))
+	http.Handle("/games/dev/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameID)))
+	http.Handle("/games/dev/update/{id}", auth.Authorize(http.HandlerFunc(updateGameID)))
 
 	// Admin endpoints
 	//http.Handle("/admin/games", auth.Authorize(http.HandlerFunc(getAllGames)))
@@ -150,7 +150,7 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 
 func createGame(w http.ResponseWriter, r *http.Request) {
     // Get the developer's ID from the request context
-    developerID := r.Context().Value("userID").(string)
+    developerID := r.Context().Value("UserID").(string)
 
     // Parse the request body
     var createRequest structs.GamePostRequest

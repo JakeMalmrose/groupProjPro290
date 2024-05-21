@@ -14,6 +14,7 @@ RUN go mod download
 COPY cmd/ ./cmd/
 COPY static/ ./static/
 COPY templates/ ./templates/
+copy auth/ ./auth/
 
 # Build the Go application
 RUN go build -o main ./cmd/server
