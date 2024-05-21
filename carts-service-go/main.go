@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/consul/api"
+	"github.com/google/uuid"
 
 	auth "github.com/Draupniyr/carts-service/auth"
 	database "github.com/Draupniyr/carts-service/database"
@@ -100,23 +101,21 @@ func CartsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCartsID(w http.ResponseWriter, r *http.Request) {
-	//get ID from URL
-	// old id := getIDfromURL(r)
-	id := r.Context().Value("userID").(string)
-	// Query the Carts table for the cart with the specified ID
-	cart, err := db.GetCart(id)
-	if err != nil {
-		cart := structs.CreateCartRequest{
-			UserID: id,
-			Games:  nil,
-			}
-		db.CreateAndUpdateCart(cart.CreateCartRequestToCart())
-	}
+    id := r.Context().Value("userID").(string)
 
-	// Render the template with the retrieved carts data
-	renderTemplate(w, "cart.html", map[string]interface{}{
-		"Carts": []structs.Cart{cart},
-	})
+    cart, err := db.GetCart(id)
+    if err != nil {
+        cart = structs.Cart{
+            ID:     uuid.New().String(),
+            UserID: id,
+            Games:  []structs.Game{},
+        }
+        db.CreateAndUpdateCart(cart)
+    }
+
+    renderTemplate(w, "cart.html", map[string]interface{}{
+        "Carts": []structs.Cart{cart},
+    })
 }
 
 func getCarts(w http.ResponseWriter, r *http.Request) {
