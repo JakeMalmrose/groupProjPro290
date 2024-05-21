@@ -1,10 +1,18 @@
 package kafka
+
 import (
-	"fmt"
+	// "fmt"
 	"os"
 
 	"github.com/IBM/sarama"
 )
+
+// func Producer(tpoic string, message []byte) {
+//     producer, err := sarama.NewSyncProducer([]string{"localhost:9092"}, nil)
+//     if err != nil {
+//         log.Fatalf("couldnt create a producer: %v", err)
+//     }
+// }
 
 func ConnectProducer(brokersUrl []string) (sarama.SyncProducer, error) {
 	config := sarama.NewConfig()
@@ -21,22 +29,22 @@ func ConnectProducer(brokersUrl []string) (sarama.SyncProducer, error) {
 
 func PushCommentToQueue(topic string, message []byte) error {
 	url := os.Getenv("KAFKA_BROKERS")
-    brokersUrl := []string{url}
-    producer, err := ConnectProducer(brokersUrl)
-    if err != nil {
-        return err
-    }
-    defer producer.Close()
+	brokersUrl := []string{url}
+	producer, err := ConnectProducer(brokersUrl)
+	if err != nil {
+		return err
+	}
+	// defer producer.Close()
 
-    msg := &sarama.ProducerMessage{
-        Topic: topic,
-        Value: sarama.StringEncoder(message),
-    }
-    partition, offset, err := producer.SendMessage(msg)
-    if err != nil {
-        return err
-    }
+	msg := &sarama.ProducerMessage{
+		Topic: topic,
+		Value: sarama.StringEncoder(message),
+	}
+	_, _, err = producer.SendMessage(msg)
+	if err != nil {
+		return err
+	}
 
-    fmt.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", topic, partition, offset)
-    return nil
+	// fmt.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", topic, partition, offset)
+	return nil
 }

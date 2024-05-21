@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/consul/api"
 
 	database "github.com/Draupniyr/carts-service/database"
-	structs "github.com/Draupniyr/carts-service/structs"
 	kafka "github.com/Draupniyr/carts-service/kafka"
+	structs "github.com/Draupniyr/carts-service/structs"
 )
 
 var db database.Database
@@ -111,8 +111,8 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
 
 	// Render the template with the retrieved carts data
 	renderTemplate(w, "cart.html", map[string]interface{}{
-        "Carts": []structs.Cart{cart},
-    })
+		"Carts": []structs.Cart{cart},
+	})
 }
 
 func getCarts(w http.ResponseWriter, r *http.Request) {
@@ -203,7 +203,7 @@ func checkout(w http.ResponseWriter, r *http.Request) {
 	}
 	// turn gamejson into a byte array
 	gameByte := []byte(gameJson)
-	
+
 	kafka.PushCommentToQueue("checkout", []byte(gameByte))
 	db.DeleteCart(id)
 
