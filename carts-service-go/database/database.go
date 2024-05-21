@@ -72,7 +72,7 @@ func (db *Database) GetCart(ID string) (structs.Cart, error) {
 	result, err := db.DynamodbClient.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("Carts"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"ID": {
+			"UserID": {
 				S: aws.String(ID),
 			},
 		},
@@ -158,7 +158,7 @@ func (db *Database) DeleteCart(ID string) error {
 	_, err := db.DynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
 		TableName: aws.String("Carts"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"ID": {
+			"UserID": {
 				S: aws.String(ID),
 			},
 		},

@@ -1,0 +1,30 @@
+<div id="container">
+    <table id="Cart-table">
+        <tr>
+            <th>Cart ID</th>
+            <th>Games</th>
+        </tr>
+        {{range .Carts}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>
+                <table>
+                    <tr>
+                        <th>Game ID</th>
+                        <th>Title</th>
+                        <th>Price</th>
+                        <th>Owned</th>
+                    </tr>
+                    {{range .Games}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td>{{.Title}}</td>
+                        <td>{{.Price}}</td>
+                    </tr>
+                    {{end}}
+                </table>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+</div>

@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/consul/api"
 
+	auth "github.com/Draupniyr/carts-service/auth"
 	database "github.com/Draupniyr/carts-service/database"
 	kafka "github.com/Draupniyr/carts-service/kafka"
 	structs "github.com/Draupniyr/carts-service/structs"
@@ -38,10 +38,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Error registering service with Consul:", err)
 	}
+	// http.Handle("/games/dev/create", auth.Authorize(http.HandlerFunc(createGame)))
 
-	http.HandleFunc("/carts", CartsHandler)
-	http.HandleFunc("/carts/{ID}", CartsHandlerID)
-	http.HandleFunc("/carts/checkout/{ID}", checkout)
+	http.Handle("/carts/all", auth.Authorize(http.HandlerFunc(CartsHandler)))
+	http.Handle("/carts", auth.Authorize(http.HandlerFunc(CartsHandlerID)))
+	http.Handle("/carts/checkout", auth.Authorize(http.HandlerFunc(checkout)))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 	log.Printf("Carts service listening on port %d", port)
@@ -100,7 +101,8 @@ func CartsHandler(w http.ResponseWriter, r *http.Request) {
 
 func getCartsID(w http.ResponseWriter, r *http.Request) {
 	//get ID from URL
-	id := getIDfromURL(r)
+	// old id := getIDfromURL(r)
+	id := r.Context().Value("userID").(string)
 	// Query the Carts table for the cart with the specified ID
 	cart, err := db.GetCart(id)
 	if err != nil {
@@ -146,7 +148,8 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 
 func deleteCartID(w http.ResponseWriter, r *http.Request) {
 	log.Println("Delete Cart Endpoint Hit")
-	id := getIDfromURL(r)
+	// old id := getIDfromURL(r)
+	id := r.Context().Value("userID").(string)
 	log.Println("ID: ", id)
 	db.DeleteCart(id)
 }
@@ -163,7 +166,8 @@ func deleteCart(w http.ResponseWriter, r *http.Request) {
 
 func updateCartID(w http.ResponseWriter, r *http.Request) {
 	// get the cart ID from the URL
-	id := getIDfromURL(r)
+	// old id := getIDfromURL(r)
+	id := r.Context().Value("userID").(string)
 	// Parse the request body = []Game
 	var game structs.Game
 	err := json.NewDecoder(r.Body).Decode(&game)
@@ -177,15 +181,10 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 	db.AddOrRemoveFromCart(id, game)
 }
 
-func getIDfromURL(r *http.Request) string {
-	url := r.URL.Path
-	parts := strings.Split(url, "/")
-	return parts[len(parts)-1]
-}
-
 func checkout(w http.ResponseWriter, r *http.Request) {
 	//get ID from URL
-	id := getIDfromURL(r)
+	// old id := getIDfromURL(r)
+	id := r.Context().Value("userID").(string)
 	// Query the Carts table for the cart with the specified ID
 	game, err := db.GetCart(id)
 	if err != nil {
@@ -211,7 +210,6 @@ func checkout(w http.ResponseWriter, r *http.Request) {
 	// renderTemplate(w, "checkout.html", map[string]interface{}{
 	// 	"Carts": []structs.Cart{cart},
 	// })
-
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
