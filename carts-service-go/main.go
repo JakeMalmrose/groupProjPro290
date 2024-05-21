@@ -136,6 +136,12 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 func createCart(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
 	log.Println("Create Cart Endpoint Hit")
+	cart, _ := db.GetCart(r.Context().Value("userID").(string))
+	if cart.ID != "" {
+		updateCartID(w, r)
+		return
+	}
+
 	var game structs.Game
 	err := json.NewDecoder(r.Body).Decode(&game)
 	if err != nil {
