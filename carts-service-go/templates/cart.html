@@ -3,19 +3,18 @@
         <tr>
             <th>Cart ID</th>
             <th>Games</th>
+            <th>Checkout</th>
         </tr>
-        {{range .Carts}}
         <tr>
-            <td>{{.ID}}</td>
+            <td>{{.Cart.ID}}</td>
             <td>
                 <table>
                     <tr>
                         <th>Game ID</th>
                         <th>Title</th>
                         <th>Price</th>
-                        <th>Owned</th>
                     </tr>
-                    {{range .Games}}
+                    {{range .Cart.Games}}
                     <tr>
                         <td>{{.ID}}</td>
                         <td>{{.Title}}</td>
@@ -24,7 +23,13 @@
                     {{end}}
                 </table>
             </td>
+            <td>
+                <button 
+                    class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                    hx-post="/carts/checkout/{{.Cart.ID}}">
+                    Checkout
+                </button>
+            </td>
         </tr>
-        {{end}}
     </table>
 </div>
