@@ -106,9 +106,11 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
 	// Query the Carts table for the cart with the specified ID
 	cart, err := db.GetCart(id)
 	if err != nil {
-		log.Println("Error getting item from Carts table:", err)
-		http.Error(w, "Cart not found", http.StatusNotFound)
-		return
+		cart := structs.CreateCartRequest{
+			UserID: id,
+			Games:  nil,
+			}
+		db.CreateAndUpdateCart(cart.CreateCartRequestToCart())
 	}
 
 	// Render the template with the retrieved carts data
