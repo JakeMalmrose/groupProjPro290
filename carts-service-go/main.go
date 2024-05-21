@@ -204,7 +204,7 @@ func checkout(w http.ResponseWriter, r *http.Request) {
 	// turn gamejson into a byte array
 	gameByte := []byte(gameJson)
 
-	kafka.PushCommentToQueue("checkout", []byte(gameByte))
+	kafka.PushCommentToQueue("cart", "checkout", gameByte)
 	db.DeleteCart(id)
 
 	// TODO: render Order complete page
