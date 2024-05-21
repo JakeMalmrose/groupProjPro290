@@ -18,7 +18,7 @@ COPY . .
 RUN go build -o carts-service main.go
 
 # Expose the port on which the carts service will run
-EXPOSE 8080
+EXPOSE 3000
 
 # Set the entry point for the container
 CMD ["./carts-service"]

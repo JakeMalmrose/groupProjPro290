@@ -32,7 +32,7 @@ func init() {
 
 }
 func main() {
-	port := 8080
+	port := 3000
 
 	err := registerService()
 	if err != nil {
@@ -43,7 +43,7 @@ func main() {
 	http.Handle("/carts/all", auth.Authorize(http.HandlerFunc(CartsHandler)))
 	http.Handle("/carts", auth.Authorize(http.HandlerFunc(CartsHandlerID)))
 	http.Handle("/carts/checkout", auth.Authorize(http.HandlerFunc(checkout)))
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":3000", nil))
 
 	log.Printf("Carts service listening on port %d", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))

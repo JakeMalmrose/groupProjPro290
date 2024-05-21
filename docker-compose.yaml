@@ -61,7 +61,7 @@ services:
     build: ./carts-service-go
     container_name: carts-service
     ports:
-      - "8080"
+      - "3000"
     environment:
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
@@ -70,10 +70,10 @@ services:
       - CONSUL_ADDRESS=consul:8500
       - SERVICE_NAME=carts-service
       - SERVICE_ID=carts-service-1
-      - SERVICE_PORT=8080
+      - SERVICE_PORT=3000
       - TRAEFIK_ENABLE=true
       - TRAEFIK_HTTP_ROUTERS_CARTS_RULE=PathPrefix(`/carts`)
-      - TRAEFIK_HTTP_SERVICES_CARTS_LOADBALANCER_SERVER_PORT=8080
+      - TRAEFIK_HTTP_SERVICES_CARTS_LOADBALANCER_SERVER_PORT=3000
       - KAFKA_BROKER=kafka:9092
     depends_on:
       - VaporCartDynamoDB
@@ -84,7 +84,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.carts.rule=PathPrefix(`/carts`)"
-      - "traefik.http.services.carts.loadbalancer.server.port=8080"
+      - "traefik.http.services.carts.loadbalancer.server.port=3000"
     # depends_on:
     #   - VaporDBdynamo
     # deploy:
