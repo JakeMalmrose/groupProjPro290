@@ -76,6 +76,8 @@ func CartsHandlerID(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		getCartsID(w, r)
+	case http.MethodPost:
+		createCart(w, r)
 	case http.MethodDelete:
 		deleteCartID(w, r)
 	case http.MethodPatch:
@@ -90,8 +92,6 @@ func CartsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet: // ADMIN
 		getCarts(w, r)
-	case http.MethodPost:
-		createCart(w, r)
 	case http.MethodDelete: // ADMIN
 		deleteCart(w, r)
 	default:
@@ -136,12 +136,16 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 func createCart(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
 	log.Println("Create Cart Endpoint Hit")
-	var cartRequest structs.CreateCartRequest
-	err := json.NewDecoder(r.Body).Decode(&cartRequest)
+	var game structs.Game
+	err := json.NewDecoder(r.Body).Decode(&game)
 	if err != nil {
 		log.Println("Error decoding request body:", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
+	}
+	cartRequest := structs.CreateCartRequest{
+		UserID: r.Context().Value("userID").(string),
+		Games:  &game,
 	}
 	log.Println("Create Request: ", cartRequest)
 
