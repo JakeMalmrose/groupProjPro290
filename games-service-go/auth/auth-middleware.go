@@ -3,6 +3,7 @@ package authmiddleware
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -14,7 +15,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func Authorize(next http.Handler) http.Handler {
+func Authorize(next http.Handler, allowedRoles ...string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
@@ -39,10 +40,27 @@ func Authorize(next http.Handler) http.Handler {
 		fmt.Println("UserID:", userID)
 		userRole := claims.Audience
         fmt.Println("UserRole:", userRole)
+		if(allowedRoles == nil) {
+			
+		} else if !contains(allowedRoles, userRole) {
+			log.Print("Allowedroles:", allowedRoles)
+			log.Print("Userrole:", userRole)
+			http.Error(w, "Unauthorized", http.StatusForbidden)
+			return
+		}
 
 		// Pass the user information to the next handler
 		ctx := context.WithValue(r.Context(), "userID", userID)
 		ctx = context.WithValue(ctx, "userRole", userRole)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
