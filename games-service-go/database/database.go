@@ -186,6 +186,29 @@ func (db *Database) UpdateGame(ID string, game structs.Game) error {
 
 	return nil
 }
+
+func (db *Database) UpdateGameField(ID string, field string, value string) error {
+	_, err := db.DynamodbClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName: aws.String("Games"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"ID": {
+				S: aws.String(ID),
+			},
+		},
+		UpdateExpression: aws.String("set " + field + " = :v"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":v": {
+				S: aws.String(value),
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (db *Database) DeleteGame(ID string) error {
 	_, err := db.DynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
 		TableName: aws.String("Games"),
