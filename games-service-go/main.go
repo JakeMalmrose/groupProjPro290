@@ -50,6 +50,8 @@ func main() {
 
 	http.HandleFunc("/games", GamesHandler)
 
+	http.Handle("/games/library", auth.Authorize(http.HandlerFunc(getGamesByUserOwned)))
+
 	// Developer endpoints
 	//http.Handle("/developer/games", auth.Authorize(http.HandlerFunc(getDeveloperGames)))
 	http.Handle("/games/dev/create", auth.Authorize(http.HandlerFunc(createGame)))
@@ -149,6 +151,35 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("GamesToDisplay:", GamesToDisplay)
+
+	renderTemplate(w, "gameslist2.html", map[string]interface{}{
+		"Games": GamesToDisplay,
+	})
+}
+
+func getGamesByUserOwned(w http.ResponseWriter, r *http.Request) {
+	// Get the user ID from the request context
+	userIDValue := r.Context().Value("userID")
+	if userIDValue == nil {
+		log.Println("User ID not found in the request context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID, ok := userIDValue.(string)
+	if !ok {
+		log.Println("User ID is not of type string")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Get the Games owned by the user
+	GamesToDisplay, err := db.GetGamesByUser(userID)
+	if err != nil {
+		log.Println("Error getting Game from database:", err)
+		http.Error(w, "Internal Server Error", http.StatusNotFound)
+		return
+	}
 
 	renderTemplate(w, "gameslist2.html", map[string]interface{}{
 		"Games": GamesToDisplay,
