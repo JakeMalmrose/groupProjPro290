@@ -172,17 +172,19 @@ func getGamesByUserOwned(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	log.Print(userID)
 
 	// Get the Games owned by the user
-	GamesToDisplay, err := db.GetGamesByUser(userID)
-	if err != nil {
-		log.Println("Error getting Game from database:", err)
-		http.Error(w, "Internal Server Error", http.StatusNotFound)
-		return
-	}
+	// DOES NOT WORK BECAUSE USERS ARENT REALLY A THING THAT EXISTS
+	//GamesToDisplay, err := db.GetGamesByUser(userID)
+	//if err != nil {
+	//	log.Println("Error getting Game from database:", err)
+	//	http.Error(w, "Internal Server Error", http.StatusNotFound)
+	//	return
+	//}
 
 	renderTemplate(w, "gameslist2.html", map[string]interface{}{
-		"Games": GamesToDisplay,
+		"Games": nil,
 	})
 }
 
