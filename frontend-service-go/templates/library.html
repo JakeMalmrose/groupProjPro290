@@ -1,22 +1,8 @@
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-6">My Library</h1>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {{range .Games}}
-        <div class="bg-white rounded-lg shadow-md">
-            <img src="{{.Image}}" alt="{{.Title}}" class="w-full h-48 object-cover rounded-t-lg">
-            <div class="p-4">
-                <h2 class="text-xl font-bold mb-2">{{.Title}}</h2>
-                <p class="text-gray-600 mb-4">{{.Description}}</p>
-                <div class="flex items-center justify-between">
-                    <span class="text-lg font-bold">${{.Price}}</span>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" hx-get="/library/download/{{.ID}}">Download</button>
-                </div>
-            </div>
-        </div>
-        {{end}}
-    </div>
+    <div hx-get="/games/library" hx-target="#library-content"></div>
+    <div id="library-content"></div>
 
-    <div id="library-message" class="mt-8"></div>
 </div>
 
 <script>
