@@ -219,9 +219,9 @@ func checkout(w http.ResponseWriter, r *http.Request) {
 	db.DeleteCart(id)
 
 	// TODO: render Order complete page
-	// renderTemplate(w, "checkout.html", map[string]interface{}{
-	// 	"Carts": []structs.Cart{cart},
-	// })
+	renderTemplate(w, "cart.html", map[string]interface{}{
+ 		"Cart": structs.Cart{},
+ 	})
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
