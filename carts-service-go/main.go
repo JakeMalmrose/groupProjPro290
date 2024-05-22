@@ -115,7 +115,7 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
     }
 
     renderTemplate(w, "cart.html", map[string]interface{}{
-        "Cart": []structs.Cart{cart},
+        "Cart": cart,
     })
 }
 
