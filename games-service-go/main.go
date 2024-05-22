@@ -57,9 +57,9 @@ func main() {
 	http.Handle("/games/dev/update/{id}", auth.Authorize(http.HandlerFunc(updateGameID)))
 
 	// Admin endpoints
-	//http.Handle("/admin/games", auth.Authorize(http.HandlerFunc(getAllGames)))
-	http.Handle("/admin/games/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameID)))
-	//http.Handle("/admin/games/approve/{id}", auth.Authorize(http.HandlerFunc(approveGameID)))
+	http.Handle("/games/admin", auth.Authorize(http.HandlerFunc(getGamesAdmin), "admin"))
+	http.Handle("/games/admin/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameID), "admin"))
+	http.Handle("/games/admin/approve/{id}", auth.Authorize(http.HandlerFunc(approveGameID), "admin"))
 
 	log.Printf("Games service listening on port %d", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
@@ -119,6 +119,10 @@ func GamesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func approveGameID(w http.ResponseWriter, r *http.Request) {
+	db.UpdateGameField("Published", "Approved", "true")
+}
+
 func getGamesID(w http.ResponseWriter, r *http.Request) {
 	id := getIDfromURL(r)
 	games, err := db.GetGame(id)
@@ -128,7 +132,7 @@ func getGamesID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Render the template with the retrieved Games data
-	renderTemplate(w, "gameslist.html", map[string]interface{}{
+	renderTemplate(w, "gameslist2.html", map[string]interface{}{
 		"Games": games,
 	})
 }
@@ -151,6 +155,20 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func getGamesAdmin(w http.ResponseWriter, r *http.Request) {
+	// Get all Games from the database
+	GamesToDisplay, err := db.GetAllGames()
+	if err != nil {
+		log.Println("Error getting Game from database:", err)
+		http.Error(w, "Internal Server Error", http.StatusNotFound)
+		return
+	}
+
+	renderTemplate(w, "admingameslist.html", map[string]interface{}{
+		"Games": GamesToDisplay,
+	})
+}
+
 func getGamesByAuthor(w http.ResponseWriter, r *http.Request) {
 	// Get the author ID from the URL
 	authorID := getIDfromURL(r)
@@ -163,7 +181,7 @@ func getGamesByAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderTemplate(w, "gameslist.html", map[string]interface{}{
+	renderTemplate(w, "gameslist2.html", map[string]interface{}{
 		"Games": GamesToDisplay,
 	})
 }
@@ -180,7 +198,7 @@ func getGamesBySearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderTemplate(w, "gameslist.html", map[string]interface{}{
+	renderTemplate(w, "gameslist2.html", map[string]interface{}{
 		"Games": GamesToDisplay,
 	})
 }

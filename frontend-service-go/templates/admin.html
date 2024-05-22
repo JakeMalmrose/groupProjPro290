@@ -3,34 +3,13 @@
 
     <div>
         <h2 class="text-2xl font-bold mb-4">All Games</h2>
-        <table class="w-full text-left table-collapse">
-            <thead>
-                <tr>
-                    <th class="text-sm font-medium text-gray-700 p-2 bg-gray-100">Title</th>
-                    <th class="text-sm font-medium text-gray-700 p-2 bg-gray-100">Developer</th>
-                    <th class="text-sm font-medium text-gray-700 p-2 bg-gray-100">Price</th>
-                    <th class="text-sm font-medium text-gray-700 p-2 bg-gray-100">Release Date</th>
-                    <th class="text-sm font-medium text-gray-700 p-2 bg-gray-100">Status</th>
-                    <th class="text-sm font-medium text-gray-700 p-2 bg-gray-100">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{range .AllGames}}
-                <tr>
-                    <td class="p-2 border-t border-gray-100">{{.Title}}</td>
-                    <td class="p-2 border-t border-gray-100">{{.Developer}}</td>
-                    <td class="p-2 border-t border-gray-100">${{.Price}}</td>
-                    <td class="p-2 border-t border-gray-100">{{.ReleaseDate}}</td>
-                    <td class="p-2 border-t border-gray-100">{{.Status}}</td>
-                    <td class="p-2 border-t border-gray-100">
-                        {{if eq .Status "Pending"}}
-                        <a href="/games/approve/{{.ID}}" class="text-green-500 hover:text-green-700">Approve</a>
-                        {{end}}
-                        <a href="/games/delete/{{.ID}}" class="text-red-500 hover:text-red-700" hx-confirm="Are you sure you want to delete this game?">Delete</a>
-                    </td>
-                </tr>
-                {{end}}
-            </tbody>
-        </table>
+        <div hx-get="/games/admin" hx-target="#games-table" hx-trigger="load">
+                
+        </div>
+        <div id="games-table"></div>
+
+        <h2 class="text-2xl font-bold mb-4">All Users</h2>
+        <div hx-get="/users/admin" hx-target="#users-table" hx-trigger="load"></div>
+        <div id="users-table"></div>
     </div>
 </div>
