@@ -2,17 +2,26 @@ package kafka
 
 import (
 	// "fmt"
+	"log"
 	"os"
 
 	"github.com/IBM/sarama"
 )
 
-// func Producer(tpoic string, message []byte) {
-//     producer, err := sarama.NewSyncProducer([]string{"localhost:9092"}, nil)
-//     if err != nil {
-//         log.Fatalf("couldnt create a producer: %v", err)
-//     }
-// }
+type KafkaProducer struct {
+	Producer sarama.SyncProducer
+}
+
+func (kafka *KafkaProducer) InitKafkaProducer() error {
+	url := os.Getenv("KAFKA_BROKER")
+	brokersUrl := []string{url}
+	err := error(nil)
+	kafka.Producer, err = ConnectProducer(brokersUrl)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func ConnectProducer(brokersUrl []string) (sarama.SyncProducer, error) {
 	config := sarama.NewConfig()
@@ -27,25 +36,16 @@ func ConnectProducer(brokersUrl []string) (sarama.SyncProducer, error) {
 	return conn, nil
 }
 
-func PushCommentToQueue(topic string, key string, message []byte) error {
-	url := os.Getenv("KAFKA_BROKERS")
-	brokersUrl := []string{url}
-	producer, err := ConnectProducer(brokersUrl)
-	if err != nil {
-		return err
-	}
-	// defer producer.Close()
-
+func (kafka *KafkaProducer) PushCommentToQueue(topic string, key string, message []byte) error {
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Key:   sarama.StringEncoder(key),
 		Value: sarama.StringEncoder(message),
 	}
-	_, _, err = producer.SendMessage(msg)
+	log.Println("Sending message to Kafka: ", msg, " with key: ", key, " and message: ", message)
+	_, _, err := kafka.Producer.SendMessage(msg)
 	if err != nil {
 		return err
 	}
-
-	// fmt.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", topic, partition, offset)
 	return nil
 }

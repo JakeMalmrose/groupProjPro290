@@ -2,7 +2,6 @@ package authmiddleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -34,11 +33,8 @@ func Authorize(next http.Handler) http.Handler {
 		}
 
 		claims := token.Claims.(*Claims)
-        fmt.Printf("Claims: %+v\n", claims)
 		userID := claims.UserID
-		fmt.Println("UserID:", userID)
 		userRole := claims.Audience
-        fmt.Println("UserRole:", userRole)
 
 		// Pass the user information to the next handler
 		ctx := context.WithValue(r.Context(), "userID", userID)
