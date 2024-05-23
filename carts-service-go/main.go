@@ -9,27 +9,39 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/consul/api"
-	"github.com/google/uuid"
 
 	auth "github.com/Draupniyr/carts-service/auth"
 	database "github.com/Draupniyr/carts-service/database"
-	kafka "github.com/Draupniyr/carts-service/kafka"
+	logic "github.com/Draupniyr/carts-service/logic"
 	structs "github.com/Draupniyr/carts-service/structs"
+	kafkaProducer "github.com/Draupniyr/carts-service/kafka"
 )
 
 var db database.Database
 var consulClient *api.Client
+var kafka kafkaProducer.KafkaProducer
 
 func init() {
-	db.Init() // Initialize the database connection
+	err := db.Init("Carts", "ID")
+	if err != nil {
+		log.Fatal("Error initializing database:", err)
+	}
+	log.Println("Database initialized")
 
-	var err error
+	err =kafka.InitKafkaProducer()
+	for err != nil {
+		err = kafka.InitKafkaProducer()
+		log.Println("Error initializing Kafka producer:", err)
+	}
+	log.Println("Kafka producer initialized")
+
 	consulConfig := api.DefaultConfig()
 	consulConfig.Address = os.Getenv("CONSUL_ADDRESS")
 	consulClient, err = api.NewClient(consulConfig)
 	if err != nil {
 		log.Fatal("Error creating Consul client:", err)
 	}
+	log.Println("Consul client created")
 
 }
 func main() {
@@ -101,27 +113,23 @@ func CartsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCartsID(w http.ResponseWriter, r *http.Request) {
-    id := r.Context().Value("userID").(string)
+	id := r.Context().Value("userID").(string)
 
-    cart, err := db.GetCart(id)
-    if err != nil {
+	cart, err := logic.GetCart(id, db)
+	if err != nil {
 		log.Println("Error getting item from Carts table:", err)
-        cart = structs.Cart{
-            ID:     uuid.New().String(),
-            UserID: id,
-            Games:  []structs.Game{},
-        }
-        db.CreateAndUpdateCart(cart)
-    }
+		http.Error(w, "Cart not found", http.StatusNotFound)
+		return
+	}
 
-    renderTemplate(w, "cart.html", map[string]interface{}{
-        "Cart": cart,
-    })
+	renderTemplate(w, "cart.html", map[string]interface{}{
+		"Cart": cart,
+	})
 }
 
 func getCarts(w http.ResponseWriter, r *http.Request) {
 	// Query the Carts table for all carts
-	carts, err := db.GetAllCarts()
+	carts, err := logic.GetAllCarts(db)
 	if err != nil {
 		log.Println("Error getting items from Carts table:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -134,13 +142,7 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 }
 
 func createCart(w http.ResponseWriter, r *http.Request) {
-	// Parse the request body
-	log.Println("Create Cart Endpoint Hit")
-	cart, _ := db.GetCart(r.Context().Value("userID").(string))
-	if cart.ID != "" {
-		updateCartID(w, r)
-		return
-	}
+	id := r.Context().Value("userID").(string)
 
 	var game structs.Game
 	err := json.NewDecoder(r.Body).Decode(&game)
@@ -149,37 +151,26 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	cartRequest := structs.CreateCartRequest{
-		UserID: r.Context().Value("userID").(string),
-		Game:  &game,
-	}
-	log.Println("Create Request: ", cartRequest)
 
-	db.CreateAndUpdateCart(cartRequest.CreateCartRequestToCart())
+	logic.CreateORUpdateCart(id, game, db)
 }
 
 func deleteCartID(w http.ResponseWriter, r *http.Request) {
-	log.Println("Delete Cart Endpoint Hit")
-	// old id := getIDfromURL(r)
+
 	id := r.Context().Value("userID").(string)
-	log.Println("ID: ", id)
-	db.DeleteCart(id)
+	logic.DeleteCart(id, db)
 }
 
 func deleteCart(w http.ResponseWriter, r *http.Request) {
 	// Delete all items from the Carts table
-	err := db.DeleteAll()
-	if err != nil {
-		log.Println("Error deleting items from Carts table:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	logic.DeleteAll(db)
 }
 
 func updateCartID(w http.ResponseWriter, r *http.Request) {
+	log.Println("Updating cart")
 	// get the cart ID from the URL
 	// old id := getIDfromURL(r)
-	id := r.Context().Value("userID").(string)
+	userID := r.Context().Value("userID").(string)
 	// Parse the request body = []Game
 	var game structs.Game
 	err := json.NewDecoder(r.Body).Decode(&game)
@@ -188,40 +179,18 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	log.Println("Update Request: ", game.ID)
-
-	db.AddOrRemoveFromCart(id, game)
+	
+	logic.AddOrRemoveFromCart(userID, game, db)
 }
 
 func checkout(w http.ResponseWriter, r *http.Request) {
-	//get ID from URL
-	// old id := getIDfromURL(r)
 	id := r.Context().Value("userID").(string)
-	// Query the Carts table for the cart with the specified ID
-	game, err := db.GetCart(id)
-	if err != nil {
-		log.Println("Error getting item from Carts table:", err)
-		http.Error(w, "Cart not found", http.StatusNotFound)
-		return
-	}
-
-	// turn game item into json
-	gameJson, err := json.Marshal(game)
-	if err != nil {
-		log.Println("Error marshalling game item:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	// turn gamejson into a byte array
-	gameByte := []byte(gameJson)
-
-	kafka.PushCommentToQueue("cart", "checkout", gameByte)
-	db.DeleteCart(id)
+	logic.Checkout(id, db, kafka)
 
 	// TODO: render Order complete page
 	renderTemplate(w, "cart.html", map[string]interface{}{
- 		"Cart": structs.Cart{},
- 	})
+		"Cart": structs.Cart{},
+	})
 }
 
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
