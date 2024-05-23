@@ -113,6 +113,7 @@ func CartsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCartsID(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /carts hit")
 	id := r.Context().Value("userID").(string)
 
 	cart, err := logic.GetCart(id, db)
@@ -128,6 +129,7 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCarts(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /carts/all hit")
 	// Query the Carts table for all carts
 	carts, err := logic.GetAllCarts(db)
 	if err != nil {
@@ -142,6 +144,8 @@ func getCarts(w http.ResponseWriter, r *http.Request) {
 }
 
 func createCart(w http.ResponseWriter, r *http.Request) {
+	// Create a new cart
+	log.Println("POST to /carts hit")
 	id := r.Context().Value("userID").(string)
 
 	var game structs.Game
@@ -152,26 +156,44 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logic.CreateORUpdateCart(id, game, db)
+	err =logic.CreateORUpdateCart(id, game, db)
+	if err != nil {
+		log.Println("Error creating item in Carts table:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func deleteCartID(w http.ResponseWriter, r *http.Request) {
-
+	// Delete the cart with the given ID
+	log.Println("DELETE /carts hit")
 	id := r.Context().Value("userID").(string)
-	logic.DeleteCart(id, db)
+	err := logic.DeleteCart(id, db)
+	if err != nil {
+		log.Println("Error deleting item from Carts table:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func deleteCart(w http.ResponseWriter, r *http.Request) {
 	// Delete all items from the Carts table
-	logic.DeleteAll(db)
+	log.Println("DELETE /carts/all hit")
+
+	err := logic.DeleteAll(db)
+	if err != nil {
+		log.Println("Error deleting items from Carts table:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func updateCartID(w http.ResponseWriter, r *http.Request) {
-	log.Println("Updating cart")
-	// get the cart ID from the URL
-	// old id := getIDfromURL(r)
+	// Update the cart with the given ID
+	log.Println("PATCH /carts hit")
+
 	userID := r.Context().Value("userID").(string)
-	// Parse the request body = []Game
+
 	var game structs.Game
 	err := json.NewDecoder(r.Body).Decode(&game)
 	if err != nil {
@@ -180,14 +202,26 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	logic.AddOrRemoveFromCart(userID, game, db)
+	err = logic.AddOrRemoveFromCart(userID, game, db)
+	if err != nil {
+		log.Println("Error adding or removing game from cart:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func checkout(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value("userID").(string)
-	logic.Checkout(id, db, kafka)
+	// Checkout the cart
+	log.Println("POST /carts/checkout hit")
 
-	// TODO: render Order complete page
+	id := r.Context().Value("userID").(string)
+	err := logic.Checkout(id, db, kafka)
+	if err != nil {
+		log.Println("Error checking out cart:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	renderTemplate(w, "cart.html", map[string]interface{}{
 		"Cart": structs.Cart{},
 	})
