@@ -169,49 +169,65 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	var user database.User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+    var requestData map[string]interface{}
+    err := json.NewDecoder(r.Body).Decode(&requestData)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
 
-	// Validate username and password
-	if user.Username == "" || user.Password == "" {
-		http.Error(w, "Username and password are required", http.StatusBadRequest)
-		return
-	}
+    var user database.User
+    user.Username = requestData["username"].(string)
+    user.Password = requestData["password"].(string)
 
-	// Check if the username already exists
-	existingUser, _ := database.GetUserByUsername(user.Username)
-	if existingUser != nil {
-		http.Error(w, "Username already exists", http.StatusConflict)
-		return
-	}
+    // Validate username and password
+    if user.Username == "" || user.Password == "" {
+        http.Error(w, "Username and password are required", http.StatusBadRequest)
+        return
+    }
 
-	// Generate a unique ID for the user
-	user.ID = generateUserID()
+    // Check if the username already exists
+    existingUser, _ := database.GetUserByUsername(user.Username)
+    if existingUser != nil {
+        http.Error(w, "Username already exists", http.StatusConflict)
+        return
+    }
 
-	// Save the user to DynamoDB
-	err = database.SaveUser(user)
-	if err != nil {
-		http.Error(w, "Failed to save user", http.StatusInternalServerError)
-		return
-	}
-	//turn user to json
-	userJson, err := json.Marshal(user)
-	if err != nil {
-		http.Error(w, "Failed to marshal user", http.StatusInternalServerError)
-		return
-	}
+    // Generate a unique ID for the user
+    user.ID = generateUserID()
 
-	userByte := []byte(userJson)
-	//send user to kafka
-	err = kafka.PushCommentToQueue("user", "registered", userByte)
+    // Determine the user's role based on the "isdev" field
+    if isdev, ok := requestData["isdev"]; ok && isdev == "on" {
+        user.Audience = "dev"
+    } else {
+        user.Audience = "user"
+    }
 
-	// Return a success response
-	response := map[string]string{"message": "User registered successfully"}
-	json.NewEncoder(w).Encode(response)
+    // Save the user to DynamoDB
+    err = database.SaveUser(user)
+    if err != nil {
+        http.Error(w, "Failed to save user", http.StatusInternalServerError)
+        return
+    }
+
+    // Turn user to JSON
+    userJSON, err := json.Marshal(user)
+    if err != nil {
+        http.Error(w, "Failed to marshal user", http.StatusInternalServerError)
+        return
+    }
+
+    userByte := []byte(userJSON)
+    // Send user to Kafka
+    err = kafka.PushCommentToQueue("user", "registered", userByte)
+    if err != nil {
+        http.Error(w, "Failed to push user to Kafka", http.StatusInternalServerError)
+        return
+    }
+
+    // Return a success response
+    response := map[string]string{"message": "User registered successfully"}
+    json.NewEncoder(w).Encode(response)
 }
 
 func generateUserID() string {
