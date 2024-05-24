@@ -5,14 +5,14 @@ import (
 
 	"encoding/json"
 
-	"github.com/Draupniyr/carts-service/database"
+	database "github.com/Draupniyr/carts-service/database"
 
 	kafka "github.com/Draupniyr/carts-service/kafka"
 	structs "github.com/Draupniyr/carts-service/structs"
 )
 
 // ----------------- Carts -----------------
-func GetCart(userID string, db database.Database) (structs.Cart, error) {
+func GetCart(userID string, db database.DatabaseFunctionality) (structs.Cart, error) {
 	cart := structs.Cart{}
 	err := db.GetFilter(userID, "UserID", &cart)
 	if err != nil {
@@ -22,7 +22,7 @@ func GetCart(userID string, db database.Database) (structs.Cart, error) {
 	return cart, nil
 }
 
-func GetAllCarts(db database.Database) ([]structs.Cart, error) {
+func GetAllCarts(db database.DatabaseFunctionality) ([]structs.Cart, error) {
 	carts := []structs.Cart{}
 	err := db.GetAll(&carts)
 	if err != nil {
@@ -32,7 +32,7 @@ func GetAllCarts(db database.Database) ([]structs.Cart, error) {
 	return carts, nil
 }
 
-func CreateORUpdateCart(userId string, game structs.Game, db database.Database) error {
+func CreateORUpdateCart(userId string, game structs.Game, db database.DatabaseFunctionality) error {
 	Cart := structs.Cart{}
 	err := db.GetFilter(userId, "UserID", &Cart)
 	if err != nil {
@@ -57,7 +57,7 @@ func CreateORUpdateCart(userId string, game structs.Game, db database.Database) 
 	}
 }
 
-func AddOrRemoveFromCart(userID string, gameToAddOrRemove structs.Game, db database.Database) error {
+func AddOrRemoveFromCart(userID string, gameToAddOrRemove structs.Game, db database.DatabaseFunctionality) error {
 	cartOG := structs.Cart{}
 	err := db.GetFilter(userID, "UserID", &cartOG)
 	if err != nil {
@@ -91,7 +91,7 @@ func AddOrRemoveFromCart(userID string, gameToAddOrRemove structs.Game, db datab
 	return nil
 }
 
-func DeleteCart(UserID string, db database.Database) error {
+func DeleteCart(UserID string, db database.DatabaseFunctionality) error {
 
 	err := db.DeleteFilter(UserID, "UserID")
 	if err != nil {
@@ -101,12 +101,16 @@ func DeleteCart(UserID string, db database.Database) error {
 	return nil
 }
 
-func DeleteAll(db database.Database) error {
-	db.DeleteAll()
+func DeleteAll(db database.DatabaseFunctionality) error {
+	err := db.DeleteAll()
+	if err != nil {
+		log.Println("Error deleting all carts:", err)
+		return err
+	}
 	return nil
 }
 
-func Checkout(userID string, db database.Database, kafka kafka.KafkaProducer) error {
+func Checkout(userID string, db database.DatabaseFunctionality, kafka kafka.KafkaProducer) error {
 
 	cart := structs.Cart{}
 	err := db.GetFilter(userID, "UserID", &cart)
@@ -128,6 +132,10 @@ func Checkout(userID string, db database.Database, kafka kafka.KafkaProducer) er
 		log.Println("Error pushing cart to kafka:", err)
 		return err
 	}
-	db.Delete(cart.ID)
+	err = db.Delete(cart.ID)
+	if err != nil {
+		log.Println("Error deleting cart:", err)
+		return err
+	}
 	return nil
 }

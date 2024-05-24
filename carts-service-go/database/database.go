@@ -13,13 +13,22 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
+type DatabaseFunctionality interface {
+	GetFilter(attributeValue string, attributeName string, output interface{}) error
+	GetAll(output interface{}) error
+	CreateOrUpdate(object interface{}) error
+	Delete(idValue string) error
+	DeleteFilter(attributeValue string, attrbuteName string) error
+	DeleteAll() error
+}
+
 type Database struct {
 	TableName      string
 	IdName         string
 	DynamodbClient *dynamodb.DynamoDB
 }
 
-// ----------------- Helper -----------------
+// ----------------- Connection -----------------
 func (db *Database) Init(tableName string, idName string) error {
 	db.TableName = tableName
 	db.IdName = capitalizeFirstLetter(idName)
@@ -32,7 +41,7 @@ func (db *Database) Init(tableName string, idName string) error {
 		},
 	}))
 
-	db.DynamodbClient = dynamodb.New(sess) //ineffective assignment to field DataBase.DynamodbClient (SA4005)
+	db.DynamodbClient = dynamodb.New(sess)
 
 	// if table does not exist, create it
 	_, err := db.DynamodbClient.DescribeTable(&dynamodb.DescribeTableInput{
@@ -190,6 +199,8 @@ func (db *Database) DeleteAll() error {
 	db.InitializeTables()
 	return nil
 }
+
+// ----------------- Helper -----------------
 
 func getIDValue(item interface{}, fieldName string) (string, error) {
 	r := reflect.ValueOf(item)

@@ -12,14 +12,15 @@ import (
 
 	auth "github.com/Draupniyr/carts-service/auth"
 	database "github.com/Draupniyr/carts-service/database"
+	kafkaProducer "github.com/Draupniyr/carts-service/kafka"
 	logic "github.com/Draupniyr/carts-service/logic"
 	structs "github.com/Draupniyr/carts-service/structs"
-	kafkaProducer "github.com/Draupniyr/carts-service/kafka"
 )
 
 var db database.Database
 var consulClient *api.Client
 var kafka kafkaProducer.KafkaProducer
+
 
 func init() {
 	err := db.Init("Carts", "ID")
@@ -28,7 +29,7 @@ func init() {
 	}
 	log.Println("Database initialized")
 
-	err =kafka.InitKafkaProducer()
+	err = kafka.InitKafkaProducer()
 	for err != nil {
 		err = kafka.InitKafkaProducer()
 		log.Println("Error initializing Kafka producer:", err)
@@ -116,7 +117,7 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /carts hit")
 	id := r.Context().Value("userID").(string)
 
-	cart, err := logic.GetCart(id, db)
+	cart, err := logic.GetCart(id, &db)
 	if err != nil {
 		log.Println("Error getting item from Carts table:", err)
 		http.Error(w, "Cart not found", http.StatusNotFound)
@@ -131,7 +132,7 @@ func getCartsID(w http.ResponseWriter, r *http.Request) {
 func getCarts(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /carts/all hit")
 	// Query the Carts table for all carts
-	carts, err := logic.GetAllCarts(db)
+	carts, err := logic.GetAllCarts(&db)
 	if err != nil {
 		log.Println("Error getting items from Carts table:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -156,7 +157,7 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err =logic.CreateORUpdateCart(id, game, db)
+	err = logic.CreateORUpdateCart(id, game, &db)
 	if err != nil {
 		log.Println("Error creating item in Carts table:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -168,7 +169,7 @@ func deleteCartID(w http.ResponseWriter, r *http.Request) {
 	// Delete the cart with the given ID
 	log.Println("DELETE /carts hit")
 	id := r.Context().Value("userID").(string)
-	err := logic.DeleteCart(id, db)
+	err := logic.DeleteCart(id, &db)
 	if err != nil {
 		log.Println("Error deleting item from Carts table:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -180,7 +181,7 @@ func deleteCart(w http.ResponseWriter, r *http.Request) {
 	// Delete all items from the Carts table
 	log.Println("DELETE /carts/all hit")
 
-	err := logic.DeleteAll(db)
+	err := logic.DeleteAll(&db)
 	if err != nil {
 		log.Println("Error deleting items from Carts table:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -201,8 +202,8 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	
-	err = logic.AddOrRemoveFromCart(userID, game, db)
+
+	err = logic.AddOrRemoveFromCart(userID, game, &db)
 	if err != nil {
 		log.Println("Error adding or removing game from cart:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -215,7 +216,7 @@ func checkout(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /carts/checkout hit")
 
 	id := r.Context().Value("userID").(string)
-	err := logic.Checkout(id, db, kafka)
+	err := logic.Checkout(id, &db, kafka)
 	if err != nil {
 		log.Println("Error checking out cart:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
