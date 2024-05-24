@@ -33,3 +33,7 @@ func (c *CreateCartRequest) CreateCartRequestToCart() Cart {
 		Games:  []Game{*c.Game},
 	}
 }
+
+func GetNewUUID() string {
+	return uuid.New().String()
+}

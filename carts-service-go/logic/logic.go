@@ -2,8 +2,8 @@ package logic
 
 import (
 	"log"
-
 	"encoding/json"
+
 
 	database "github.com/Draupniyr/carts-service/database"
 
@@ -17,7 +17,13 @@ func GetCart(userID string, db database.DatabaseFunctionality) (structs.Cart, er
 	err := db.GetFilter(userID, "UserID", &cart)
 	if err != nil {
 		log.Println("Error getting cart:", err)
-		return cart, err
+		// if cart does not exist, create it winth an empty array of games
+		cart = structs.Cart{
+			ID:     structs.GetNewUUID(),
+			UserID: userID,
+			Games:  []structs.Game{},
+		}
+		db.CreateOrUpdate(cart)
 	}
 	return cart, nil
 }
