@@ -129,12 +129,13 @@ func approveGameID(w http.ResponseWriter, r *http.Request) {
 
 func getGamesID(w http.ResponseWriter, r *http.Request) {
 	id := getIDfromURL(r)
-	games, err := logic.GetGame(id, &db)
+	game, err := logic.GetGame(id, &db)
 	if err != nil {
 		log.Println("Error getting Game from database:", err)
 		http.Error(w, "Internal Server Error", http.StatusNotFound)
 		return
 	}
+	games := []structs.Game{*game}
 	// Render the template with the retrieved Games data
 	renderTemplate(w, "gameslist2.html", map[string]interface{}{
 		"Games": games,
