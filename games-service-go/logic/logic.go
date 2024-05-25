@@ -1,6 +1,8 @@
 package logic
 
 import (
+	"errors"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 
@@ -20,37 +22,35 @@ func GetGame(ID string, db database.DatabaseFunctionality) (*structs.Game, error
 
 func SearchGames(search string, db database.DatabaseFunctionality) ([]structs.Game, error) {
 	AllFoundGames := []structs.Game{}
+
 	games := []structs.Game{}
-	err := db.GetFilter(search, "Title", &games)
-	if err != nil {
-		return nil, err
-	}
+	db.GetFilter(search, "Title", &games)
 	AllFoundGames = append(AllFoundGames, games...)
+
 	games = []structs.Game{}
-	err = db.GetFilter(search, "Description", &games)
-	if err != nil {
-		return nil, err
-	}
+	db.GetFilter(search, "Description", &games)
 	AllFoundGames = append(AllFoundGames, games...)
+
 	games = []structs.Game{}
-	err = db.GetFilter(search, "Tags", &games)
-	if err != nil {
-		return nil, err
-	}
+	db.GetFilter(search, "Tags", &games)
 	AllFoundGames = append(AllFoundGames, games...)
+
+	if len(AllFoundGames) == 0 {
+		return nil, errors.New("no games found")
+	}
 
 	// Remove duplicates
 	encountered := map[string]bool{}
-	for v := range AllFoundGames {
-		if encountered[AllFoundGames[v].ID] == true {
-			AllFoundGames = append(AllFoundGames[:v], AllFoundGames[v+1:]...)
-			v--
-		} else {
-			encountered[AllFoundGames[v].ID] = true
+	uniqueGames := []structs.Game{}
+
+	for _, game := range AllFoundGames {
+		if !encountered[game.ID] {
+			encountered[game.ID] = true
+			uniqueGames = append(uniqueGames, game)
 		}
 	}
 
-	return AllFoundGames, nil
+	return uniqueGames, nil
 }
 
 func GetGamesByAuthor(authorID string, db database.DatabaseFunctionality) ([]structs.Game, error) {
@@ -92,7 +92,7 @@ func UpdateGame(ID string, userid string, game structs.Game, db database.Databas
 	if err != nil {
 		return err
 	}
-	if ogGame.AuthorID != userid {
+	if ogGame.AuthorID == userid {
 		game.ID = ID
 		err := db.CreateOrUpdate(game)
 		if err != nil {

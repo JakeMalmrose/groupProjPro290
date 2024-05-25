@@ -34,8 +34,15 @@ func (db *Database) GetFilter(attributeValue string, attributeName string, outpu
 		if err != nil {
 			return err
 		}
-		if attribute == attributeValue {
-			resultStore = append(resultStore, item)
+		// if attribute name contains ID
+		if strings.Contains(attributeName, "ID") {
+			if attribute == attributeValue {
+				resultStore = append(resultStore, item)
+			}
+		} else {
+			if strings.Contains(attribute, attributeValue) {
+				resultStore = append(resultStore, item)
+			}
 		}
 	}
 	if len(resultStore) == 0 {
@@ -47,11 +54,18 @@ func (db *Database) GetFilter(attributeValue string, attributeName string, outpu
 		return errors.New("output must be a non-nil pointer")
 	}
 
-	if len(resultStore) > 1 {
-		outputValue.Elem().Set(reflect.ValueOf(resultStore))
-	} else {
+	if len(resultStore) == 1 && outputValue.Elem().Kind() != reflect.Slice{
 		outputValue.Elem().Set(reflect.ValueOf(resultStore[0]))
+		return nil
 	}
+
+	// Create a slice of the correct type
+	resultSlice := reflect.MakeSlice(outputValue.Elem().Type(), len(resultStore), len(resultStore))
+	for i := 0; i < len(resultStore); i++ {
+		resultSlice.Index(i).Set(reflect.ValueOf(resultStore[i]))
+	}
+	outputValue.Elem().Set(resultSlice)
+
 	return nil
 }
 
