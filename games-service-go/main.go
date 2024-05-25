@@ -11,9 +11,10 @@ import (
 
 	"github.com/hashicorp/consul/api"
 
+	auth "github.com/Draupniyr/games-service/auth"
 	database "github.com/Draupniyr/games-service/database"
 	structs "github.com/Draupniyr/games-service/structs"
-	auth "github.com/Draupniyr/games-service/auth"
+	logic "github.com/Draupniyr/games-service/logic"
 )
 
 var db database.Database
@@ -21,9 +22,11 @@ var consulClient *api.Client
 
 func init() {
 
-	db.Init() // Initialize the database connection   Hopefully
+	err := db.Init("Games", "ID")
+	if err != nil {
+		log.Fatal("Error initializing database:", err)
+	} // Initialize the database connection   Hopefully
 
-	var err error
 	consulConfig := api.DefaultConfig()
 	consulConfig.Address = os.Getenv("CONSUL_ADDRESS")
 	consulClient, err = api.NewClient(consulConfig)
@@ -39,7 +42,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Error registering service with Consul:", err)
 	}
-
 
 	http.HandleFunc("/games/getform", GamesFormHandler)
 	http.HandleFunc("/games/{id}", GamesHandlerID)
@@ -122,12 +124,12 @@ func GamesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func approveGameID(w http.ResponseWriter, r *http.Request) {
-	db.UpdateGameField("Published", "Approved", "true")
+	logic.UpdateGameField("Published", "Approved", "true", db)
 }
 
 func getGamesID(w http.ResponseWriter, r *http.Request) {
 	id := getIDfromURL(r)
-	games, err := db.GetGame(id)
+	games, err := logic.GetGame(id, &db)
 	if err != nil {
 		log.Println("Error getting Game from database:", err)
 		http.Error(w, "Internal Server Error", http.StatusNotFound)
@@ -140,17 +142,15 @@ func getGamesID(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGames(w http.ResponseWriter, r *http.Request) {
-	// get search string from body
-	search := r.FormValue("search")
+
 
 	// Filter the Games based on the search string
-	GamesToDisplay, err := db.SearchGames(search)
+	GamesToDisplay, err := logic.GetAllGames(&db)
 	if err != nil {
 		log.Println("Error getting Game from database:", err)
 		http.Error(w, "Internal Server Error", http.StatusNotFound)
 		return
 	}
-	log.Println("GamesToDisplay:", GamesToDisplay)
 
 	renderTemplate(w, "gameslist2.html", map[string]interface{}{
 		"Games": GamesToDisplay,
@@ -190,7 +190,7 @@ func getGamesByUserOwned(w http.ResponseWriter, r *http.Request) {
 
 func getGamesAdmin(w http.ResponseWriter, r *http.Request) {
 	// Get all Games from the database
-	GamesToDisplay, err := db.GetAllGames()
+	GamesToDisplay, err := logic.GetAllGames(&db)
 	if err != nil {
 		log.Println("Error getting Game from database:", err)
 		http.Error(w, "Internal Server Error", http.StatusNotFound)
@@ -207,7 +207,7 @@ func getGamesByAuthor(w http.ResponseWriter, r *http.Request) {
 	authorID := getIDfromURL(r)
 
 	// Get the Games by the author
-	GamesToDisplay, err := db.GetGamesByAuthor(authorID)
+	GamesToDisplay, err := logic.GetGamesByAuthor(authorID, &db)
 	if err != nil {
 		log.Println("Error getting Game from database:", err)
 		http.Error(w, "Internal Server Error", http.StatusNotFound)
@@ -224,7 +224,7 @@ func getGamesBySearch(w http.ResponseWriter, r *http.Request) {
 	search := getIDfromURL(r)
 
 	// Get the Games by the search string
-	GamesToDisplay, err := db.SearchGames(search)
+	GamesToDisplay, err := logic.SearchGames(search, &db)
 	if err != nil {
 		log.Println("Error getting Game from database:", err)
 		http.Error(w, "Internal Server Error", http.StatusNotFound)
@@ -236,49 +236,52 @@ func getGamesBySearch(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-
 func createGame(w http.ResponseWriter, r *http.Request) {
-    // Get the developer's ID from the request context
-    userIDValue := r.Context().Value("userID")
-    if userIDValue == nil {
-        log.Println("User ID not found in the request context")
-        http.Error(w, "Unauthorized", http.StatusUnauthorized)
-        return
-    }
+	// Get the developer's ID from the request context
+	userID := r.Context().Value("userID").(string)
+	if userID == "" {
+		log.Println("User ID not found in the request context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-    developerID, ok := userIDValue.(string)
-    if !ok {
-        log.Println("User ID is not of type string")
-        http.Error(w, "Unauthorized", http.StatusUnauthorized)
-        return
-    }
+	// Parse the request body
+	var createRequest structs.GamePostRequest
+	err := json.NewDecoder(r.Body).Decode(&createRequest)
+	if err != nil {
+		log.Println("Error decoding request body:", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 
-    // Parse the request body
-    var createRequest structs.GamePostRequest
-    err := json.NewDecoder(r.Body).Decode(&createRequest)
-    if err != nil {
-        log.Println("Error decoding request body:", err)
-        http.Error(w, "Bad Request", http.StatusBadRequest)
-        return
-    }
+	// Set the developer ID in the create request
+	createRequest.AuthorID = userID
 
-    log.Println("Create Game Request:")
-    log.Println("Title:", createRequest.Title)
-    log.Println("Description:", createRequest.Description)
-    log.Println("Tags:", createRequest.Tags)
-    log.Println("Price:", createRequest.Price)
-    log.Println("Author:", createRequest.Author)
-    log.Println("AuthorID:", createRequest.AuthorID)
+	log.Println("Author ID: ", createRequest.AuthorID)
+	log.Println("Author: ", createRequest.Author)
+	log.Println("Title: ", createRequest.Title)
+	log.Println("Description: ", createRequest.Description)
+	log.Println("Tags: ", createRequest.Tags)
+	log.Println("Price: ", createRequest.Price)
 
-    // Set the developer ID in the create request
-    createRequest.AuthorID = developerID
-
-    db.CreateGame(createRequest.GamePostRequestToGame())
+	err = logic.CreateGame(createRequest.GamePostRequestToGame(), &db)
+	if err != nil {
+		log.Println("Error creating Game in database:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func deleteGameID(w http.ResponseWriter, r *http.Request) {
 	id := getIDfromURL(r)
-	db.DeleteGame(id)
+	userID := r.Context().Value("userID").(string)
+	if userID == "" {
+		log.Println("User ID not found in the request context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	logic.DeleteGame(id, userID, &db)
 }
 
 func deleteAllGame(w http.ResponseWriter, r *http.Request) {
@@ -288,6 +291,13 @@ func deleteAllGame(w http.ResponseWriter, r *http.Request) {
 
 func updateGameID(w http.ResponseWriter, r *http.Request) {
 	id := getIDfromURL(r)
+	userID := r.Context().Value("userID").(string)
+	if userID == "" {
+		log.Println("User ID not found in the request context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	// Parse the request body
 	var updateRequest structs.GamePostRequest
 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
@@ -297,7 +307,7 @@ func updateGameID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//       v The new Id and Publish are igored here, they should never be updated
-	db.UpdateGame(id, updateRequest.GamePostRequestToGame())
+	logic.UpdateGame(id, userID, updateRequest.GamePostRequestToGame(), &db)
 }
 
 func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -319,6 +329,12 @@ func GameUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 func createUpdate(w http.ResponseWriter, r *http.Request) {
 	gameID := getIDfromURL(r)
+	userID := r.Context().Value("userID").(string)
+	if userID == "" {
+		log.Println("User ID not found in the request context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	// Parse the request body
 	var updateRequest structs.UpdatePostObject
 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
@@ -327,16 +343,28 @@ func createUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	db.CreateUpdate(gameID, updateRequest.UpdatePostObjectToUpdate())
+	logic.CreateUpdate(gameID, userID, updateRequest.UpdatePostObjectToUpdate(), &db)
 }
 
 func deleteUpdate(w http.ResponseWriter, r *http.Request) {
 	gameID, updateID := getTwoIDsfromURL(r)
-	db.DeleteUpdate(gameID, updateID)
+	userID := r.Context().Value("userID").(string)
+	if userID == "" {
+		log.Println("User ID not found in the request context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	logic.DeleteUpdate(gameID, userID, updateID, &db)
 }
 
 func updateUpdate(w http.ResponseWriter, r *http.Request) {
 	gameID, updateID := getTwoIDsfromURL(r)
+	userID := r.Context().Value("userID").(string)
+	if userID == "" {
+		log.Println("User ID not found in the request context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	// Parse the request body
 	var updateRequest structs.UpdatePostObject
 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
@@ -345,12 +373,12 @@ func updateUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	db.UpdateUpdate(gameID, updateID, updateRequest)
+	logic.UpdateUpdate(gameID, userID, updateID, updateRequest, &db)
 }
 
 func getUpdate(w http.ResponseWriter, r *http.Request) {
 	gameID, updateID := getTwoIDsfromURL(r)
-	update, err := db.GetUpdate(gameID, updateID)
+	update, err := logic.GetUpdate(gameID, updateID, &db)
 	if err != nil {
 		log.Println("Error getting Update from database:", err)
 		http.Error(w, "Internal Server Error", http.StatusNotFound)

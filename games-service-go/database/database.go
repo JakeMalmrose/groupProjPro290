@@ -1,25 +1,38 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"reflect"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-
-	structs "github.com/Draupniyr/games-service/structs"
 )
 
+type DatabaseFunctionality interface {
+	GetFilter(attributeValue string, attributeName string, output interface{}) error
+	GetAll(output interface{}) error
+	CreateOrUpdate(object interface{}) error
+	Delete(idValue string) error
+	DeleteFilter(attributeValue string, attrbuteName string) error
+	DeleteAll() error
+}
+
 type Database struct {
+	TableName      string
+	IdName         string
 	DynamodbClient *dynamodb.DynamoDB
 }
 
-func (db *Database) Init() {
-	log.Println("Initializing database")
+// ----------------- Connection -----------------
+func (db *Database) Init(tableName string, idName string) error {
+	db.TableName = tableName
+	db.IdName = capitalizeFirstLetter(idName)
 	endpoint := os.Getenv("DYNAMODB_ENDPOINT")
-	log.Println("Endpoint:", endpoint)
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -28,31 +41,35 @@ func (db *Database) Init() {
 		},
 	}))
 
-	db.DynamodbClient = dynamodb.New(sess) //ineffective assignment to field DataBase.DynamodbClient (SA4005)
+	db.DynamodbClient = dynamodb.New(sess)
 
-	// if Games table does not exist, create it maybe
+	// if table does not exist, create it
 	_, err := db.DynamodbClient.DescribeTable(&dynamodb.DescribeTableInput{
-		TableName: aws.String("Games"),
+		TableName: aws.String(db.TableName),
 	})
 	if err != nil {
 		log.Println("Table does not exist, creating it")
-		db.InitializeTables()
+		err = db.InitializeTables()
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (db *Database) InitializeTables() error {
 	_, err := db.DynamodbClient.CreateTable(&dynamodb.CreateTableInput{
 		TableName: aws.
-			String("Games"),
+			String(db.TableName),
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
-				AttributeName: aws.String("ID"),
+				AttributeName: aws.String(db.IdName),
 				AttributeType: aws.String("S"),
 			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
-				AttributeName: aws.String("ID"),
+				AttributeName: aws.String(db.IdName),
 				KeyType:       aws.String("HASH"),
 			},
 		},
@@ -62,228 +79,148 @@ func (db *Database) InitializeTables() error {
 		},
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	return nil
 }
 
-// ----------------- Games -----------------
-func (db *Database) GetGame(ID string) (*structs.Game, error) {
-	result, err := db.DynamodbClient.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String("Games"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"ID": {
-				S: aws.String(ID),
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
+// ----------------- Items -----------------
+func (db *Database) GetFilter(attributeValue string, attributeName string, output interface{}) error {
+	if attributeValue == "" {
+		return fmt.Errorf("attributeValue is required")
 	}
-
-	game := structs.Game{}
-	err = dynamodbattribute.UnmarshalMap(result.Item, &game)
-	if err != nil {
-		return nil, err
+	if attributeName == "" {
+		return fmt.Errorf("attributeName is required")
 	}
+	filterExpression := capitalizeFirstLetter(attributeName) + " = :" + lowercaseFirstLetter(attributeName)
 
-	return &game, nil
-}
-func (db *Database) SearchGames(search string) ([]structs.Game, error) {
-	// case sencitive search ;-;
 	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
-		TableName:        aws.String("Games"),
-		FilterExpression: aws.String("contains(Title, :search) OR contains(Description, :search) OR contains(Tags, :search)"),
+		TableName:        aws.String(db.TableName),
+		FilterExpression: aws.String(filterExpression),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":search": {
-				S: aws.String(search),
+			":" + lowercaseFirstLetter(attributeName): {
+				S: aws.String(attributeValue),
 			},
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-
-	
-
-	games := []structs.Game{}
-	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &games)
-	if err != nil {
-		return nil, err
+	if len(result.Items) == 0 {
+		return fmt.Errorf("item not found for "+attributeName+": ", attributeValue)
 	}
-
-	return games, nil
+	// Check the type of output and unmarshal accordingly
+	if reflect.TypeOf(output).Kind() == reflect.Ptr && reflect.TypeOf(output).Elem().Kind() == reflect.Slice {
+		// Unmarshal list of items
+		err = dynamodbattribute.UnmarshalListOfMaps(result.Items, output)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Unmarshal single item
+		if len(result.Items) > 1 {
+			return fmt.Errorf("more than one item found for %s: %s", attributeName, attributeValue)
+		}
+		err = dynamodbattribute.UnmarshalMap(result.Items[0], output)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (db *Database) GetGamesByAuthor(authorID string) ([]structs.Game, error) {
+func (db *Database) GetAll(output interface{}) error {
 	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
-		TableName:        aws.String("Games"),
-		FilterExpression: aws.String("AuthorID = :authorID"),
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":authorID": {
-				S: aws.String(authorID),
-			},
-		},
+		TableName: aws.String(db.TableName),
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	games := []structs.Game{}
-	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &games)
-	if err != nil {
-		return nil, err
-	}
-
-	return games, nil
-}
-
-func (db *Database) GetAllGames() ([]structs.Game, error) {
-	result, err := db.DynamodbClient.Scan(&dynamodb.ScanInput{
-		TableName: aws.String("Games"),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	games := []structs.Game{}
-	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &games)
-	if err != nil {
-		return nil, err
-	}
-
-	return games, nil
-}
-func (db *Database) CreateGame(game structs.Game) error {
-	item, err := dynamodbattribute.MarshalMap(game)
 	if err != nil {
 		return err
 	}
 
+	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, output)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *Database) CreateOrUpdate(object interface{}) error {
+	item, err := dynamodbattribute.MarshalMap(object)
+	if err != nil {
+		return err
+	}
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String("Games"),
+		TableName: aws.String(db.TableName),
 		Item:      item,
 	}
-
 	db.DynamodbClient.PutItem(input)
-
-	return nil
-}
-func (db *Database) UpdateGame(ID string, game structs.Game) error {
-	game.ID = ID
-	item, err := dynamodbattribute.MarshalMap(game)
-	if err != nil {
-		return err
-	}
-
-	input := &dynamodb.PutItemInput{
-		TableName: aws.String("Games"),
-		Item:      item,
-	}
-
-	db.DynamodbClient.PutItem(input)
-
 	return nil
 }
 
-func (db *Database) UpdateGameField(ID string, field string, value string) error {
-	_, err := db.DynamodbClient.UpdateItem(&dynamodb.UpdateItemInput{
-		TableName: aws.String("Games"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"ID": {
-				S: aws.String(ID),
-			},
-		},
-		UpdateExpression: aws.String("set " + field + " = :v"),
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":v": {
-				S: aws.String(value),
-			},
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (db *Database) DeleteGame(ID string) error {
+func (db *Database) Delete(idValue string) error {
 	_, err := db.DynamodbClient.DeleteItem(&dynamodb.DeleteItemInput{
-		TableName: aws.String("Games"),
+		TableName: aws.String(db.TableName),
 		Key: map[string]*dynamodb.AttributeValue{
-			"ID": {
-				S: aws.String(ID),
+			db.IdName: {
+				S: aws.String(idValue),
 			},
 		},
 	})
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
+
+func (db *Database) DeleteFilter(attributeValue string, attrbuteName string) error {
+	array := []any{}
+	db.GetFilter(attributeValue, attrbuteName, array)
+	if len(array) == 0 {
+		return fmt.Errorf("item not found for "+attrbuteName+": ", attributeValue)
+	}
+
+	for _, item := range array {
+		id, err := getIDValue(item, db.IdName)
+		if err != nil {
+			return err
+		}
+		err = db.Delete(id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (db *Database) DeleteAll() error {
 	db.DynamodbClient.DeleteTable(&dynamodb.DeleteTableInput{
-		TableName: aws.String("Games"),
+		TableName: aws.String(db.TableName),
 	})
 	db.InitializeTables()
 	return nil
 }
 
-// ----------------- Updates -----------------
-func (db *Database) CreateUpdate(ID string, update structs.Update) error {
-	currentGame, err := db.GetGame(ID)
-	currentGame.Updates = append(currentGame.Updates, update)
-	if err != nil {
-		return err
+// ----------------- Helper -----------------
+
+func getIDValue(item interface{}, fieldName string) (string, error) {
+	r := reflect.ValueOf(item)
+	f := reflect.Indirect(r).FieldByName(fieldName)
+	if !f.IsValid() {
+		return "", fmt.Errorf("field %s not found", fieldName)
 	}
-	db.UpdateGame(ID, *currentGame)
-	return nil
+	return f.String(), nil
 }
-func (db *Database) DeleteUpdate(ID string, updateID string) error {
-	currentGame, err := db.GetGame(ID)
-	if err != nil {
-		return err
+
+func capitalizeFirstLetter(s string) string {
+	if len(s) == 0 {
+		return s
 	}
-	for i, update := range currentGame.Updates {
-		if update.ID == updateID {
-			currentGame.Updates = append(currentGame.Updates[:i], currentGame.Updates[i+1:]...)
-			break
-		}
-	}
-	db.UpdateGame(ID, *currentGame)
-	return nil
+	return strings.ToUpper(string(s[0])) + s[1:]
 }
-func (db *Database) GetUpdate(ID string, updateID string) (*structs.Update, error) {
-	currentGame, err := db.GetGame(ID)
-	if err != nil {
-		return nil, err
+
+func lowercaseFirstLetter(s string) string {
+	if len(s) == 0 {
+		return s
 	}
-	for _, update := range currentGame.Updates {
-		if update.ID == updateID {
-			return &update, nil
-		}
-	}
-	return nil, nil
-}
-func (db *Database) UpdateUpdate(ID string, updateID string, update structs.UpdatePostObject) error {
-	currentGame, err := db.GetGame(ID)
-	if err != nil {
-		return err
-	}
-	for i, update := range currentGame.Updates {
-		if update.ID == updateID {
-			if update.Title != "" {
-				currentGame.Updates[i].Title = update.Title
-			}
-			if update.Content != "" {
-				currentGame.Updates[i].Content = update.Content
-			}
-			break
-		}
-	}
-	db.UpdateGame(ID, *currentGame)
-	return nil
+	return strings.ToLower(string(s[0])) + s[1:]
 }
