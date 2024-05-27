@@ -103,6 +103,7 @@ services:
       - DYNAMODB_ENDPOINT=http://VaporAuthDynamoDB:8000
       - CONSUL_ADDRESS=consul:8500
       - SERVICE_NAME=auth-service
+      - KAFKA_BROKER=kafka:9092
       - SERVICE_ID=auth-service-1
       - SERVICE_PORT=3000
       - TRAEFIK_ENABLE=true
