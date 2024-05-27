@@ -28,7 +28,7 @@ func ConnectProducer(brokersUrl []string) (sarama.SyncProducer, error) {
 }
 
 func PushCommentToQueue(topic string, key string, message []byte) error {
-	url := os.Getenv("KAFKA_BROKERS")
+	url := os.Getenv("KAFKA_BROKER")
 	brokersUrl := []string{url}
 	producer, err := ConnectProducer(brokersUrl)
 	if err != nil {

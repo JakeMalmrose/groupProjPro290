@@ -222,6 +222,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
     err = kafka.PushCommentToQueue("user", "registered", userByte)
     if err != nil {
         http.Error(w, "Failed to push user to Kafka", http.StatusInternalServerError)
+		fmt.Printf("Failed to push user to Kafka: %v\n", err)
         return
     }
 
