@@ -200,3 +200,8 @@ C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pr
 C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\obj\Debug\net8.0\Pro290VaporUserDotNetAPI.pdb
 C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\obj\Debug\net8.0\Pro290VaporUserDotNetAPI.genruntimeconfig.cache
 C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\obj\Debug\net8.0\ref\Pro290VaporUserDotNetAPI.dll
+C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
+C:\Users\spyro\Desktop\Classes\Academic Year 3\Quarter 1\Proj\groupProjPro290\Pro290VaporUserDotNetAPI\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "25Pq5bL6ZPBVaw6r5LEbMpUVk4I984rHNnz1UDBVYZ8FaNA9LkxdIpTZkETCUwQekhUwDH/Dfi6AX5eCxY6TNQ==",
+  "dgSpecHash": "9km4vOZXPV1x+mI6rp7ZiQP4sh4YiIKNxxz56xoOXbHsf962bK+rRlncB4EQP4/3m0R8Oke74rKGqC05UtLnbw==",
   "success": true,
   "projectFilePath": "C:\\Users\\spyro\\Desktop\\Classes\\Academic Year 3\\Quarter 1\\Proj\\groupProjPro290\\Pro290VaporUserDotNetAPI\\Pro290VaporUserDotNetAPI.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,9 @@
     "C:\\Users\\spyro\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.1\\microsoft.aspnetcore.authentication.jwtbearer.8.0.1.nupkg.sha512",
+    "C:\\Users\\spyro\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\8.0.5\\microsoft.aspnetcore.cryptography.internal.8.0.5.nupkg.sha512",
+    "C:\\Users\\spyro\\.nuget\\packages\\microsoft.aspnetcore.cryptography.keyderivation\\8.0.5\\microsoft.aspnetcore.cryptography.keyderivation.8.0.5.nupkg.sha512",
+    "C:\\Users\\spyro\\.nuget\\packages\\microsoft.aspnetcore.identity.entityframeworkcore\\8.0.5\\microsoft.aspnetcore.identity.entityframeworkcore.8.0.5.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\7.0.5\\microsoft.aspnetcore.jsonpatch.7.0.5.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.aspnetcore.mvc.newtonsoftjson\\7.0.5\\microsoft.aspnetcore.mvc.newtonsoftjson.7.0.5.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.3\\microsoft.aspnetcore.openapi.8.0.3.nupkg.sha512",
@@ -40,6 +43,8 @@
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.hosting\\6.0.0\\microsoft.extensions.hosting.6.0.0.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\6.0.0\\microsoft.extensions.hosting.abstractions.6.0.0.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.http\\3.1.0\\microsoft.extensions.http.3.1.0.nupkg.sha512",
+    "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.identity.core\\8.0.5\\microsoft.extensions.identity.core.8.0.5.nupkg.sha512",
+    "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.identity.stores\\8.0.5\\microsoft.extensions.identity.stores.8.0.5.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.logging\\9.0.0-preview.2.24128.5\\microsoft.extensions.logging.9.0.0-preview.2.24128.5.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.0-preview.2.24128.5\\microsoft.extensions.logging.abstractions.9.0.0-preview.2.24128.5.nupkg.sha512",
     "C:\\Users\\spyro\\.nuget\\packages\\microsoft.extensions.logging.configuration\\6.0.0\\microsoft.extensions.logging.configuration.6.0.0.nupkg.sha512",

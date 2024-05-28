@@ -1,28 +1,30 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
- 
+
 public class User
 {
     [Key]
-    public Guid UserGuid { get; set; }
- 
+    public int ID { get; set; }  // Primary key
+
     [Required]
-    public String Username { get; set; }
- 
+    [MaxLength(50)]
+    public string Username { get; set; }
+
     [Required]
-    public String Email { get; set; }
- 
-    [Required]
-    public String Password { get; set; }
- 
+    [MaxLength(255)]
+    public string Password { get; set; }  // Assuming passwords are hashed
+
     [Required]
     public DateTime CreatedDate { get; set; }
- 
-    public List<Order>? Orders { get; set; }
- 
- 
-    string toString()
-    {
-        return this.UserGuid.ToString();
-    }
-}
 
+    public int? CartID { get; set; }
+    public int? LibraryID { get; set; }
+    public float Balance { get; set; }
+
+    // Navigation properties
+    public virtual Cart Cart { get; set; }
+    public virtual Library Library { get; set; }
+    public virtual ICollection<UserRole> UserRoles { get; set; }
+    public virtual ICollection<Order> Orders { get; set; }
+}

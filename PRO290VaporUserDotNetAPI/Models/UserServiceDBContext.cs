@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
  
  
-public class OrderServiceDBContext : DbContext
+public class UserServiceDBContext : DbContext
 {
-    public OrderServiceDBContext()
+    public UserServiceDBContext()
     {
     }
  
-    public OrderServiceDBContext(DbContextOptions<OrderServiceDBContext> options) : base(options)
+    public UserServiceDBContext(DbContextOptions<UserServiceDBContext> options) : base(options)
     {
     }
  
@@ -28,7 +28,7 @@ public class OrderServiceDBContext : DbContext
         {
             base.OnModelCreating(modelBuilder);
 
-        // Define composite keys
+         // Define composite keys
         modelBuilder.Entity<UserRole>()
             .HasKey(ur => new { ur.UserID, ur.RoleID });
 
@@ -53,6 +53,5 @@ public class OrderServiceDBContext : DbContext
             .WithMany() // Indicate the relationship type
             .HasForeignKey(g => g.OrderGuid) // Specify the foreign key property in the Game entity
             .OnDelete(DeleteBehavior.Restrict); // Define delete behavior
-                
         }
     }

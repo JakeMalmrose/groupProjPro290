@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Pro290VaporUserDotNetAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae76f34148180b630aec8df38013e4560b9f62d6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a7aaccfcc98dbc75db841495f65551ed8191230c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Pro290VaporUserDotNetAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Pro290VaporUserDotNetAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
