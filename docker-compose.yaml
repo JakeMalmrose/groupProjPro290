@@ -26,6 +26,7 @@ services:
 
   games-service:
     build: ./games-service-go
+    # container_name: games-service
     ports:
       - "3000"
     environment:
@@ -51,6 +52,7 @@ services:
     
   carts-service:
     build: ./carts-service-go
+    # container_name: carts-service
     ports:
       - "3000"
     environment:
@@ -82,7 +84,7 @@ services:
 
   auth-service:
     build: ./auth-service
-    container_name: auth-service
+    # container_name: auth-service
     ports:
       - "3000"
     environment:
@@ -108,6 +110,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=PathPrefix(`/auth`)"
       - "traefik.http.services.auth.loadbalancer.server.port=3000"
+    deploy:
+      mode: replicated
+      replicas: 3
 
 
 
