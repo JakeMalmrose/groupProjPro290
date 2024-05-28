@@ -23,17 +23,10 @@ services:
       - TRAEFIK_HTTP_ROUTERS_FRONTEND_RULE=PathPrefix(`/`)
       - TRAEFIK_HTTP_SERVICES_FRONTEND_LOADBALANCER_SERVER_PORT=3000
 
-  # PRO290VaporGameAPI:
-  #   build: ./PRO290VaporGameAPI
-  #   image: vaporgameapi
-  #   ports:
-  #     - 8080:8080
-  #   networks:
-  #     - VaporNet
 
   games-service:
     build: ./games-service-go
-    container_name: games-service
+    # container_name: games-service
     ports:
       - "3000"
     environment:
@@ -52,14 +45,14 @@ services:
       - VaporGameDynamoDB
     networks:
       - VaporNet     
-    # deploy:
-    #   mode: replicated
-    #   replicas: 3
+    deploy:
+      mode: replicated
+      replicas: 3
 
     
   carts-service:
     build: ./carts-service-go
-    container_name: carts-service
+    # container_name: carts-service
     ports:
       - "3000"
     environment:
@@ -85,15 +78,13 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.carts.rule=PathPrefix(`/carts`)"
       - "traefik.http.services.carts.loadbalancer.server.port=3000"
-    # depends_on:
-    #   - VaporDBdynamo
-    # deploy:
-    #   mode: replicated
-    #   replicas: 3
+    deploy:
+      mode: replicated
+      replicas: 3
 
   auth-service:
     build: ./auth-service
-    container_name: auth-service
+    # container_name: auth-service
     ports:
       - "3000"
     environment:
@@ -119,6 +110,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=PathPrefix(`/auth`)"
       - "traefik.http.services.auth.loadbalancer.server.port=3000"
+    deploy:
+      mode: replicated
+      replicas: 3
 
 
 
