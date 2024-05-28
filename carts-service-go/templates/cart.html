@@ -17,7 +17,9 @@
                         <td class="px-4 py-2">{{.Title}}</td>
                         <td class="px-4 py-2">${{.Price}}</td>
                         <td class="px-4 py-2">
-                            <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" hx-delete="/carts/{{$.Cart.ID}}/games/{{.ID}}">Remove</button>
+                            <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" hx-patch="/carts" hx-ext="json-enc" hx-target="#content" hx-vals='{
+                                "id": "{{.ID}}"
+                            }'>Remove</button>
                         </td>
                     </tr>
                     {{end}}
