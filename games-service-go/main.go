@@ -62,7 +62,7 @@ func main() {
 
 	// Admin endpoints
 	http.Handle("/games/admin", auth.Authorize(http.HandlerFunc(getGamesAdmin), "admin"))
-	http.Handle("/games/admin/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameID), "admin"))
+	http.Handle("/games/admin/delete/{id}", auth.Authorize(http.HandlerFunc(deleteGameByGameID), "admin"))
 	http.Handle("/games/admin/approve/{id}", auth.Authorize(http.HandlerFunc(approveGameID), "admin"))
 
 	log.Printf("Games service listening on port %d", port)
@@ -283,6 +283,11 @@ func deleteGameID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logic.DeleteGame(id, userID, &db)
+}
+
+func deleteGameByGameID(w http.ResponseWriter, r *http.Request) {
+	id := getIDfromURL(r)
+	logic.DeleteGameByID(id, &db)
 }
 
 func deleteAllGame(w http.ResponseWriter, r *http.Request) {

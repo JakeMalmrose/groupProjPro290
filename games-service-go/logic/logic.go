@@ -138,6 +138,14 @@ func DeleteGame(ID string, userId string, db database.DatabaseFunctionality) err
 	}
 	return nil
 }
+
+func DeleteGameByID(ID string, db database.DatabaseFunctionality) error {
+	err := db.Delete(ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 func DeleteAll(db database.DatabaseFunctionality) error {
 	db.DeleteAll()
 	return nil
