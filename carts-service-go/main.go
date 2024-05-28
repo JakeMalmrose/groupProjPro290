@@ -205,12 +205,15 @@ func updateCartID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = logic.AddOrRemoveFromCart(userID, game, &db)
+	cart, err := logic.AddOrRemoveFromCart(userID, game, &db)
 	if err != nil {
 		log.Println("Error adding or removing game from cart:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+	renderTemplate(w, "cart.html", map[string]interface{}{
+		"Cart": &cart,
+	})
 }
 
 func checkout(w http.ResponseWriter, r *http.Request) {

@@ -54,7 +54,7 @@ func CreateORUpdateCart(userId string, game structs.Game, db database.DatabaseFu
 		}
 		return nil
 	} else {
-		err = AddOrRemoveFromCart(userId, game, db)
+		_, err = AddOrRemoveFromCart(userId, game, db)
 		if err != nil {
 			log.Println("Error adding or removing game from cart:", err)
 			return err
@@ -63,12 +63,12 @@ func CreateORUpdateCart(userId string, game structs.Game, db database.DatabaseFu
 	}
 }
 
-func AddOrRemoveFromCart(userID string, gameToAddOrRemove structs.Game, db database.DatabaseFunctionality) error {
+func AddOrRemoveFromCart(userID string, gameToAddOrRemove structs.Game, db database.DatabaseFunctionality) (*structs.Cart, error) {
 	cartOG := structs.Cart{}
 	err := db.GetFilter(userID, "UserID", &cartOG)
 	if err != nil {
 		log.Println("Error getting cart:", err)
-		return err
+		return nil, err
 	}
 
 	newgames := []structs.Game{}
@@ -92,9 +92,9 @@ func AddOrRemoveFromCart(userID string, gameToAddOrRemove structs.Game, db datab
 	err = db.CreateOrUpdate(cartOG)
 	if err != nil {
 		log.Println("Error adding or removing game from cart:", err)
-		return err
+		return nil, err
 	}
-	return nil
+	return &cartOG, nil
 }
 
 func DeleteCart(UserID string, db database.DatabaseFunctionality) error {
@@ -117,7 +117,6 @@ func DeleteAll(db database.DatabaseFunctionality) error {
 }
 
 func Checkout(userID string, db database.DatabaseFunctionality, kafka kafka.KafkaProducer) error {
-
 	cart := structs.Cart{}
 	err := db.GetFilter(userID, "UserID", &cart)
 	if err != nil {
