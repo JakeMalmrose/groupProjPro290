@@ -54,8 +54,8 @@ func main() {
 	}
 	// http.Handle("/games/dev/create", auth.Authorize(http.HandlerFunc(createGame)))
 
-	http.Handle("/carts/all", auth.Authorize(http.HandlerFunc(CartsHandler)))
-	http.Handle("/carts", auth.Authorize(http.HandlerFunc(CartsHandlerID)))
+	http.Handle("/carts/all", auth.Authorize(http.HandlerFunc(CartsHandlerAll)))
+	http.Handle("/carts", auth.Authorize(http.HandlerFunc(CartsHandler)))
 	http.Handle("/carts/checkout", auth.Authorize(http.HandlerFunc(checkout)))
 	log.Fatal(http.ListenAndServe(":3000", nil))
 
@@ -85,7 +85,7 @@ func registerService() error {
 	return consulClient.Agent().ServiceRegister(service)
 }
 
-func CartsHandlerID(w http.ResponseWriter, r *http.Request) {
+func CartsHandler(w http.ResponseWriter, r *http.Request) {
 	// Retrieve carts from DynamoDB
 	switch r.Method {
 	case http.MethodGet:
@@ -101,7 +101,7 @@ func CartsHandlerID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func CartsHandler(w http.ResponseWriter, r *http.Request) {
+func CartsHandlerAll(w http.ResponseWriter, r *http.Request) {
 	// Retrieve carts from DynamoDB
 	switch r.Method {
 	case http.MethodGet: // ADMIN
@@ -112,6 +112,7 @@ func CartsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
 
 func getCartsID(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /carts hit")
@@ -165,6 +166,7 @@ func createCart(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// out of date
 func deleteCartID(w http.ResponseWriter, r *http.Request) {
 	// Delete the cart with the given ID
 	log.Println("DELETE /carts hit")
